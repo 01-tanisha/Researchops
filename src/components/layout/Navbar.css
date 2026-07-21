@@ -1,0 +1,184 @@
+/* Navbar */
+
+.navbar{
+    width:100%;
+    height:80px;
+
+    background:#1B2944;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:0 60px;
+
+    position:sticky;
+    top:0;
+
+    z-index:1000;
+}
+
+/* Logo */
+
+.logo{
+
+    color:white;
+
+    font-size:32px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
+}
+
+/* Center Navigation */
+
+.nav-center{
+
+    flex:1;
+
+    min-width:0;
+
+    display:flex;
+
+    justify-content:center;
+}
+
+.nav-links{
+
+    display:flex;
+
+    list-style:none;
+
+    gap:35px;
+
+    padding:0;
+
+    margin:0;
+}
+
+.nav-links li{
+
+    list-style:none;
+}
+
+.nav-links a{
+
+    color:white;
+
+    text-decoration:none;
+
+    cursor:pointer;
+
+    transition:.3s;
+    white-space:nowrap;
+}
+
+.nav-links a:hover{
+
+    color:#F9B233;
+}
+
+/* Buttons */
+
+.nav-buttons{
+
+    display:flex;
+
+    gap:15px;
+}
+
+.login-btn,
+.start-btn{
+
+    padding:10px 18px;
+
+    border:none;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-size:15px;
+}
+
+.login-btn{
+
+    background:white;
+}
+
+.start-btn{
+
+    background:#F9B233;
+}
+/* Tablet */
+
+@media (max-width:1024px){
+
+    .navbar{
+
+        padding:0 30px;
+    }
+
+    .nav-links{
+
+        gap:20px;
+    }
+
+    .logo{
+
+        font-size:26px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width:768px){
+
+    .navbar{
+
+        padding:0 16px;
+    }
+
+    .nav-center{
+
+        margin:0 12px;
+    }
+
+    .nav-links{
+
+        gap:18px;
+
+        flex-wrap:nowrap;
+
+        overflow-x:auto;
+    }
+
+    .nav-links::-webkit-scrollbar{
+
+        display:none;
+    }
+
+    .nav-buttons{
+
+        gap:10px;
+    }
+
+    .logo{
+
+        font-size:24px;
+    }
+
+    .nav-links li,
+    .login-btn,
+    .start-btn{
+
+        font-size:14px;
+    }
+
+    .login-btn,
+    .start-btn{
+
+        padding:9px 14px;
+    }
+}
