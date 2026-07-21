@@ -182,3 +182,19 @@
         padding:9px 14px;
     }
 }
+.nav-links a{
+
+    color:white;
+
+    text-decoration:none;
+}
+
+.nav-links a:hover{
+
+    color:#F9B233;
+}
+
+.nav-buttons a{
+
+    text-decoration:none;
+}

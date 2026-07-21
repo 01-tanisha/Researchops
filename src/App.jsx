@@ -1,22 +1,18 @@
-import "./App.css";
-import Navbar from "./components/layout/Navbar";
-import Hero from "./components/home/Hero";
-import Features from "./components/home/Feature";
-import Stats from "./components/home/Stats";
-import CTA from "./components/home/CTA";
+import { Routes, Route } from "react-router-dom";
 
-
-
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
-    <>
-      <Navbar />
-      <Hero />
-      <Features />
-      <Stats />
-      <CTA />
-    </>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
