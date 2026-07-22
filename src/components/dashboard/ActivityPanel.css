@@ -1,0 +1,24 @@
+.activity-panel{
+
+    margin-top:35px;
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:12px;
+
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+}
+
+.activity-panel ul{
+
+    margin-top:15px;
+
+    padding-left:20px;
+}
+
+.activity-panel li{
+
+    margin-bottom:12px;
+}

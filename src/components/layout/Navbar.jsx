@@ -5,7 +5,7 @@ function Navbar() {
   return (
     <nav className="navbar">
 
-      <div className="logo">
+      <div className="navbar-logo">
         ResearchOps AI
       </div>
 
