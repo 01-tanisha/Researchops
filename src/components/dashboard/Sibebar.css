@@ -1,5 +1,5 @@
 .sidebar{
-    width:250px;
+    width:200px;
     min-height:100vh;
 
     background:#1B2944;
@@ -37,4 +37,20 @@
 .sidebar a:hover{
 
     color:#F9B233;
+}
+
+.menu-title{
+
+    color:#7A8AA5;
+
+    font-size:12px;
+
+    letter-spacing:2px;
+
+    margin-top:30px;
+
+    margin-bottom:12px;
+
+    text-transform:uppercase;
+
 }

@@ -1,0 +1,47 @@
+.users{
+
+    margin-top:35px;
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:12px;
+
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+
+}
+
+.users h2{
+
+    margin-bottom:20px;
+
+}
+
+.user-card{
+
+    padding:15px 0;
+
+    border-bottom:1px solid #eee;
+
+}
+
+.user-card:last-child{
+
+    border:none;
+
+}
+
+.user-name{
+
+    font-weight:600;
+
+}
+
+.user-email{
+
+    color:#777;
+
+    font-size:14px;
+
+}
