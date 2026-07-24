@@ -1,66 +1,46 @@
 .sidebar{
-    width:200px;
-    min-height:100vh;
-
-    background:#1B2944;
-
-    padding:30px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    background: #1B2944;
+    padding: 30px;
+    z-index: 1000;
 }
 
 .logo{
-
-    color:white;
-
-    margin-bottom:40px;
+    color: white;
+    margin-bottom: 40px;
 }
 
 .sidebar nav{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .sidebar a{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
-    padding:14px 18px;
-
-    border-radius:10px;
-
-    color:white;
-
-    text-decoration:none;
-
-    transition:.3s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    transition: .3s;
 }
 
 .sidebar a:hover{
-
-    background:#2D4368;
-
-    color:#F9B233;
+    background: #2D4368;
+    color: #F9B233;
 }
 
 .menu-title{
-
-    color:#7A8AA5;
-
-    font-size:12px;
-
-    letter-spacing:2px;
-
-    margin-top:30px;
-
-    margin-bottom:12px;
-
-    text-transform:uppercase;
-
+    color: #7A8AA5;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-top: 30px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
 }

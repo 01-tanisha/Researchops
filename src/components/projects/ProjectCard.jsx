@@ -1,6 +1,7 @@
 import "./ProjectCard.css";
 
-function ProjectCard({ project }) {
+
+function ProjectCard({ project, deleteProject  }) {
 
     const statusClass = project.status.toLowerCase();
 
@@ -22,7 +23,15 @@ function ProjectCard({ project }) {
 
                 <button>Edit</button>
 
-                <button>Delete</button>
+                <button onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this project?')) {
+                        deleteProject(project.id);
+                    }
+                }}>
+
+                    Delete
+
+                </button>
 
             </div>
 

@@ -1,0 +1,26 @@
+.dashboard-layout{
+
+    display:flex;
+
+    min-height:100vh;
+
+    background:#EEF2F7;
+
+}
+
+.dashboard-layout-main{
+
+    flex:1;
+
+    margin-left:250px; /* account for fixed sidebar width + padding */
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.dashboard-layout-page{
+
+    padding:30px;
+    /* removed fixed left margin so flexbox places it beside the sidebar */
+}

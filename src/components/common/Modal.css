@@ -1,0 +1,81 @@
+/* Dark background */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    animation: fadeIn .25s ease;
+}
+
+/* Modal */
+
+.modal {
+    width: 620px;
+    max-width: 92%;
+    background: #ffffff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: slideUp .3s ease;
+}
+
+/* Header */
+
+.modal-header {
+    background: #1B2944;
+    color: white;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+/* Body */
+
+.modal-body {
+    padding: 30px;
+}
+
+@keyframes slideUp {
+
+    from{
+        transform: translateY(30px);
+        opacity:0;
+    }
+
+    to{
+        transform: translateY(0);
+        opacity:1;
+    }
+
+}
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+    }
+
+    to{
+        opacity:1;
+    }
+
+}

@@ -1,15 +1,15 @@
-function AddProjectButton(){
+function AddProjectButton({ onClick }) {
 
-    return(
+    return (
 
-        <button className="add-project">
-
+        <button
+            className="add-project"
+            onClick={onClick}
+        >
             + Add Project
-
         </button>
 
     );
-
 }
 
 export default AddProjectButton;

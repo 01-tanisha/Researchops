@@ -38,3 +38,85 @@
     transform:translateY(-2px);
     background:#e9a11b;
 }
+
+.project-form{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.project-form label{
+    font-weight:600;
+    color:#1B2944;
+    margin-bottom:6px;
+    display:block;
+}
+
+.project-form input,
+.project-form select{
+
+    width:100%;
+    padding:14px 16px;
+    border:1px solid #D8DEE9;
+    border-radius:10px;
+    font-size:15px;
+    outline:none;
+    transition:.25s;
+    box-sizing:border-box;
+
+}
+
+.project-form input:focus,
+.project-form select:focus{
+
+    border-color:#1B2944;
+    box-shadow:0 0 0 4px rgba(27,41,68,.12);
+
+}
+
+.project-form-buttons{
+
+    display:flex;
+    justify-content:flex-end;
+    gap:15px;
+    margin-top:10px;
+
+}
+
+.cancel-btn{
+
+    padding:12px 22px;
+    background:#ECEFF4;
+    color:#1B2944;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+
+}
+
+.cancel-btn:hover{
+
+    background:#D8DEE9;
+
+}
+
+.save-btn{
+
+    padding:12px 22px;
+    background:#1B2944;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+
+}
+
+.save-btn:hover{
+
+    background:#F9B233;
+    color:#1B2944;
+
+}
