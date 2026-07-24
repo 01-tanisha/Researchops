@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
-import "./Sibebar.css";
+import { NavLink } from "react-router-dom";
+import { FaHome, FaFolder, FaTruck, FaPoll, FaChartBar, FaCog } from "react-icons/fa";
+import "./Sidebar.css";
 
 function Sidebar() {
 	return (
@@ -9,29 +10,66 @@ function Sidebar() {
 			<div className="menu-title">MAIN</div>
 
 			<nav>
-				<Link to="/dashboard">Dashboard</Link>
-				<Link to="/projects">Projects</Link>
+				<NavLink
+  					to="/dashboard"
+  					className={({ isActive }) => (isActive ? "active-link" : "")}
+				>
+  				<FaHome />
+  				Dashboard
+				</NavLink>
+				<NavLink
+  					to="/projects"
+  					className={({ isActive }) => (isActive ? "active-link" : "")}
+				>
+ 				 <FaFolder />
+				Projects
+				</NavLink>
 			</nav>
 
 			<div className="menu-title">MANAGEMENT</div>
 
 			<nav>
-				<Link to="/vendors">Vendors</Link>
-				<Link to="/surveys">Surveys</Link>
+				<NavLink
+  				to="/vendors"
+  					className={({ isActive }) => (isActive ? "active-link" : "")}
+					>
+  				<FaTruck />
+  					Vendors
+					</NavLink>
+				<NavLink
+  to="/surveys"
+  className={({ isActive }) => (isActive ? "active-link" : "")}
+>
+  <FaPoll />
+  Surveys
+</NavLink>
 			</nav>
 
 			<div className="menu-title">ANALYTICS</div>
 
 			<nav>
-				<Link to="/reports">Reports</Link>
+				<NavLink
+  to="/reports"
+  className={({ isActive }) => (isActive ? "active-link" : "")}
+>
+	<FaChartBar />
+  Reports
+</NavLink>
 			</nav>
 
 			<div className="menu-title">ACCOUNT</div>
 
 			<nav>
-				<Link to="/settings">Settings</Link>
+				<NavLink
+  to="/settings"
+  className={({ isActive }) => (isActive ? "active-link" : "")}
+>
+  <FaCog />
+  Settings
+</NavLink>
 			</nav>
 		</aside>
+		
 	);
 }
 

@@ -1,16 +1,103 @@
 .topbar{
 
-    height:70px;
-
-    background:white;
-
     display:flex;
 
     justify-content:space-between;
 
     align-items:center;
 
-    padding:0 30px;
+    padding:20px 35px;
 
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    background:white;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+.search-box{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    background:#F4F6FA;
+
+    padding:10px 16px;
+
+    border-radius:8px;
+
+    width:320px;
+
+}
+
+.search-box input{
+
+    border:none;
+
+    outline:none;
+
+    background:transparent;
+
+    width:100%;
+
+}
+
+.topbar-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+}
+
+.notification-btn{
+
+    border:none;
+
+    background:#F4F6FA;
+
+    padding:12px;
+
+    border-radius:50%;
+
+    cursor:pointer;
+
+}
+
+.user-profile{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    cursor:pointer;
+
+}
+
+.avatar{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    background:#1B2944;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:bold;
+
 }

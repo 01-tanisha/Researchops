@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-
+import Projects from "./pages/Projects";
 function App() {
   return (
     <Routes>
@@ -12,6 +12,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/projects" element={<Projects />} />
     </Routes>
   );
 }

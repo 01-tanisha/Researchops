@@ -25,16 +25,26 @@
 
 .sidebar a{
 
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:14px 18px;
+
+    border-radius:10px;
+
     color:white;
 
     text-decoration:none;
-
-    font-size:18px;
 
     transition:.3s;
 }
 
 .sidebar a:hover{
+
+    background:#2D4368;
 
     color:#F9B233;
 }

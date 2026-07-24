@@ -1,22 +1,60 @@
 import "./Topbar.css";
 
-function Topbar() {
-  return (
-    <header className="topbar">
+import {
+    FaSearch,
+    FaBell,
+    FaChevronDown
+} from "react-icons/fa";
 
-      <h2>
-        Dashboard
-      </h2>
+function Topbar(){
 
-      <div>
+    return(
 
-        Welcome,
-        Tanisha
+        <header className="topbar">
 
-      </div>
+            <div className="search-box">
 
-    </header>
-  );
+                <FaSearch/>
+
+                <input
+                    type="text"
+                    placeholder="Search projects..."
+                />
+
+            </div>
+
+            <div className="topbar-right">
+
+                <button className="notification-btn">
+
+                    <FaBell/>
+
+                </button>
+
+                <div className="user-profile">
+
+                    <div className="avatar">
+
+                        T
+
+                    </div>
+
+                    <span>
+
+                        Tanisha
+
+                    </span>
+
+                    <FaChevronDown/>
+
+                </div>
+
+            </div>
+
+        </header>
+
+    );
+
 }
 
 export default Topbar;

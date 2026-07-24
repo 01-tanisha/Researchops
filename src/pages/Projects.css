@@ -1,0 +1,40 @@
+.dashboard-content{
+    padding:35px;
+    background:#EEF2F7;
+    min-height:100vh;
+}
+
+.projects-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.projects-header h1{
+    font-size:34px;
+    color:#1B2944;
+}
+
+.projects-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:25px;
+    margin-top:30px;
+}
+
+.add-project{
+    background:#F9B233;
+    color:#1B2944;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.add-project:hover{
+    transform:translateY(-2px);
+    background:#e9a11b;
+}
