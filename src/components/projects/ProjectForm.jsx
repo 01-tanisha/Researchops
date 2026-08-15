@@ -1,6 +1,16 @@
 import "../../pages/Projects.css";
 
-function ProjectForm({ title, setTitle, client, setClient, status, setStatus, onSave, onCancel }) {
+function ProjectForm({
+  title,
+  setTitle,
+  client,
+  setClient,
+  status,
+  setStatus,
+  onSave,
+  onCancel,
+  buttonLabel = "Add Project",
+}) {
   return (
     <div className="project-form">
       <div>
@@ -37,7 +47,7 @@ function ProjectForm({ title, setTitle, client, setClient, status, setStatus, on
           Cancel
         </button>
         <button className="save-btn" onClick={onSave}>
-          Add Project
+          {buttonLabel}
         </button>
       </div>
     </div>

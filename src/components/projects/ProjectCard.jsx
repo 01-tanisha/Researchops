@@ -1,7 +1,7 @@
 import "./ProjectCard.css";
 
 
-function ProjectCard({ project, deleteProject  }) {
+function ProjectCard({ project, deleteProject, onEdit }) {
 
     const statusClass = project.status.toLowerCase();
 
@@ -21,13 +21,9 @@ function ProjectCard({ project, deleteProject  }) {
 
                 <button>View</button>
 
-                <button>Edit</button>
+                <button onClick={() => onEdit(project)}>Edit</button>
 
-                <button onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this project?')) {
-                        deleteProject(project.id);
-                    }
-                }}>
+                <button onClick={() => deleteProject(project.id)}>
 
                     Delete
 

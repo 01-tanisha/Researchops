@@ -1,6 +1,7 @@
 .dashboard-page {
     display: flex;
     min-height: 100vh;
+    padding-left: 260px;
 }
 
 .dashboard-main {
@@ -9,6 +10,7 @@
     flex-direction: column;
     background: #F4F6F9;
     min-width: 0;
+    width: calc(100% - 260px);
 }
 
 .dashboard-content {
