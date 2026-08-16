@@ -16,6 +16,13 @@
     margin:0;
 }
 
+.recent-projects-empty{
+
+    margin-top:16px;
+
+    color:#64748b;
+}
+
 .recent-projects table{
 
     width:100%;

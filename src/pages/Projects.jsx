@@ -7,10 +7,18 @@ import ProjectForm from "../components/projects/ProjectForm";
 import "./Projects.css";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import ConfirmationModal from "../components/common/ConfirmationModal";
+import {
+    getProjects,
+    createProject,
+    updateProject as updateProjectApi,
+    deleteProject as deleteProjectApi
+} from "../services/api/projectApi";
+
 
 function Projects() {
   const [searchTerm, setSearchTerm] = useState("");
   const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [client, setClient] = useState("");
@@ -22,22 +30,36 @@ function Projects() {
     projectId: null,
   });
 
-  const API_URL = "http://127.0.0.1:8000/api/projects/";
 
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Failed to fetch projects");
-      const data = await response.json();
-      setProjects(data);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
+ useEffect(() => {
+
+    async function fetchProjects() {
+
+        try {
+
+            const data = await getProjects();
+
+            setProjects(data);
+
+        } catch (error) {
+
+            console.error(
+                "Error fetching projects:",
+                error
+            );
+
+        } finally {
+
+            setIsLoading(false);
+
+        }
+
     }
-  };
 
-  useEffect(() => {
     fetchProjects();
-  }, []);
+
+}, []);
+
 
   async function addProject() {
     if (title.trim() === "" || client.trim() === "") {
@@ -48,14 +70,7 @@ function Projects() {
     const newProject = { title, client, status };
 
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newProject),
-      });
-
-      const createdProject = await response.json();
-      if (!response.ok) throw new Error(createdProject.error || "Failed to add project");
+      const createdProject = await createProject(newProject);
 
       setProjects((currentProjects) => [...currentProjects, createdProject]);
       setTitle("");
@@ -77,15 +92,12 @@ function Projects() {
     }
 
     try {
-      const response = await fetch(`${API_URL}${editingProject.id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, client, status }),
+      const updatedProject = await updateProjectApi(editingProject.id, {
+        title,
+        client,
+        status,
       });
 
-      if (!response.ok) throw new Error("Failed to update project.");
-
-      const updatedProject = await response.json();
       setProjects((currentProjects) =>
         currentProjects.map((project) =>
           project.id === updatedProject.id ? updatedProject : project
@@ -106,11 +118,7 @@ function Projects() {
 
   async function deleteProject(projectId) {
     try {
-      const response = await fetch(`${API_URL}${projectId}/`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete project.");
+      await deleteProjectApi(projectId);
 
       setProjects((currentProjects) =>
         currentProjects.filter((project) => project.id !== projectId)
@@ -123,7 +131,17 @@ function Projects() {
     }
   }
 
-  function openDeleteConfirmation(projectId) {
+  function openDeleteConfirmation(projectOrId) {
+    const projectId =
+      typeof projectOrId === "object" && projectOrId !== null
+        ? projectOrId.id ?? projectOrId.project_id ?? null
+        : projectOrId;
+
+    if (!projectId) {
+      alert("Unable to delete this project. Missing project ID.");
+      return;
+    }
+
     setConfirmation({ isOpen: true, type: "delete", projectId });
   }
 
@@ -154,9 +172,18 @@ function Projects() {
     await addProject();
   }
 
-  const filteredProjects = projects.filter((project) =>
-    project.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProjects = projects.filter((project) => {
+    const search = searchTerm.trim().toLowerCase();
+
+    if (!search) return true;
+
+    const title = String(project.title ?? "").toLowerCase();
+    const client = String(
+      project.client ?? project.client_name ?? project.clientName ?? ""
+    ).toLowerCase();
+
+    return title.includes(search) || client.includes(search);
+  });
 
   return (
     <DashboardLayout>
@@ -189,15 +216,41 @@ function Projects() {
         </Modal>
 
         <div className="projects-grid">
-          {filteredProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              deleteProject={openDeleteConfirmation}
-              onEdit={openEditModal}
-            />
-          ))}
+
+    {isLoading ? (
+
+        <div className="projects-message">
+            <p>Loading projects...</p>
         </div>
+
+    ) : filteredProjects.length === 0 ? (
+
+        <div className="projects-message">
+
+            <h3>No projects found</h3>
+
+            <p>
+                Try changing your search or add a new project.
+            </p>
+
+        </div>
+
+    ) : (
+
+        filteredProjects.map((project) => (
+
+            <ProjectCard
+                key={project.id}
+                project={project}
+                onDelete={openDeleteConfirmation}
+                onEdit={openEditModal}
+            />
+
+        ))
+
+    )}
+
+</div>
       </div>
 
       <ConfirmationModal

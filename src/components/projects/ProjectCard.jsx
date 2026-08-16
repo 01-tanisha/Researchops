@@ -1,7 +1,7 @@
 import "./ProjectCard.css";
 
 
-function ProjectCard({ project, deleteProject, onEdit }) {
+function ProjectCard({ project, onDelete, onEdit }) {
 
     const statusClass = project.status.toLowerCase();
 
@@ -23,7 +23,7 @@ function ProjectCard({ project, deleteProject, onEdit }) {
 
                 <button onClick={() => onEdit(project)}>Edit</button>
 
-                <button onClick={() => deleteProject(project.id)}>
+                <button type="button" onClick={() => onDelete(project)}>
 
                     Delete
 

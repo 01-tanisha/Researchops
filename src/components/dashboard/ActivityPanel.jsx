@@ -1,17 +1,6 @@
 import "./ActivityPanel.css";
 
-function ActivityPanel(){
-
-    const activities=[
-
-        "Vendor ABC uploaded survey responses",
-
-        "Healthcare project approved",
-
-        "Client meeting scheduled",
-
-        "New vendor added"
-    ];
+function ActivityPanel({ activities = [] }) {
 
     return(
 
@@ -25,15 +14,13 @@ function ActivityPanel(){
 
             <ul>
 
-                {activities.map((activity,index)=>(
-
-                    <li key={index}>
-
-                        {activity}
-
-                    </li>
-
-                ))}
+              {activities.length === 0 ? (
+                <li className="activity-empty">No recent activity found.</li>
+              ) : (
+                activities.map((activity) => (
+                  <li key={activity.id}>{activity.text}</li>
+                ))
+              )}
 
             </ul>
 
