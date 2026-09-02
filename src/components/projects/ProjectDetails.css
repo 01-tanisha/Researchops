@@ -1,0 +1,47 @@
+.project-details {
+    width: 100%;
+}
+
+.project-details-header {
+    margin-bottom: 24px;
+}
+
+.project-details-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.project-details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.project-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.project-detail-item span {
+    font-size: 13px;
+    color: #777;
+}
+
+.project-detail-item strong {
+    font-size: 16px;
+    color: #222;
+}
+
+.project-details-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+}
+
+.details-close-btn {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}

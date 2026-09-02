@@ -38,7 +38,7 @@ function ProjectForm({
         <select value={status} onChange={(e) => setStatus(e.target.value)}>
           <option>Active</option>
           <option>Completed</option>
-          <option>Pending</option>
+          <option>Paused</option>
         </select>
       </div>
 

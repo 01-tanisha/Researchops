@@ -43,3 +43,18 @@
     font-size:14px;
 
 }
+
+.users-message {
+    font-size: 14px;
+    color: #666;
+    margin: 12px 0;
+}
+
+.users-error {
+    font-size: 14px;
+    color: #c62828;
+    background: #fdecec;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+}

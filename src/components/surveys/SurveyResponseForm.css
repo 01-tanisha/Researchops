@@ -1,0 +1,194 @@
+.survey-response-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(27, 41, 68, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 30px;
+}
+
+.survey-response-modal {
+    width: 100%;
+    max-width: 850px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+}
+
+.survey-response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 28px;
+    background: #1b2944;
+    color: #ffffff;
+}
+
+.survey-response-header h2 {
+    margin: 0 0 6px;
+    font-size: 24px;
+}
+
+.survey-response-header p {
+    margin: 0;
+    opacity: 0.85;
+}
+
+.response-close-btn {
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.survey-response-form {
+    padding: 28px;
+}
+
+.respondent-section,
+.questions-section {
+    margin-bottom: 28px;
+}
+
+.respondent-section h3,
+.questions-section h3 {
+    color: #1b2944;
+    margin: 0 0 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #1b2944;
+    margin-bottom: 7px;
+}
+
+.form-group input,
+.response-question-card textarea,
+.response-question-card select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #d8dee9;
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-group input:focus,
+.response-question-card textarea:focus,
+.response-question-card select:focus {
+    border-color: #1b2944;
+    box-shadow: 0 0 0 4px rgba(27, 41, 68, 0.1);
+}
+
+.response-question-card {
+    padding: 20px;
+    margin-bottom: 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.response-question-card > label {
+    display: block;
+    color: #1b2944;
+    margin-bottom: 8px;
+}
+
+.response-question-text {
+    color: #334155;
+    margin: 0 0 15px;
+}
+
+.required-star {
+    color: #c62828;
+}
+
+.choice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.choice-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #334155;
+    cursor: pointer;
+}
+
+.choice-item input {
+    cursor: pointer;
+}
+
+.response-message {
+    padding: 30px;
+    text-align: center;
+    color: #64748b;
+}
+
+.response-error {
+    padding: 12px 16px;
+    margin: 0 28px 18px;
+    background: #fff1f2;
+    color: #c62828;
+    border-radius: 8px;
+}
+
+.response-success {
+    padding: 12px 16px;
+    background: #f0fdf4;
+    color: #166534;
+    border-radius: 8px;
+}
+
+.response-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.response-form-actions button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.response-cancel-btn {
+    background: #eceff4;
+    color: #1b2944;
+}
+
+.response-cancel-btn:hover {
+    background: #d8dee9;
+}
+
+.response-submit-btn {
+    background: #1b2944;
+    color: #ffffff;
+}
+
+.response-submit-btn:hover {
+    background: #f9b233;
+    color: #1b2944;
+}
+
+.response-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

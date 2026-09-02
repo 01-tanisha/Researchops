@@ -162,3 +162,11 @@
 
     font-size: 14px;
 }
+
+.projects-error {
+    color: #c62828;
+}
+
+.projects-error p {
+    color: #666;
+}

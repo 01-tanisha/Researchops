@@ -1,0 +1,86 @@
+.survey-card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.survey-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.survey-card p {
+    margin-bottom: 12px;
+}
+
+.survey-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.survey-status {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.survey-card-content p {
+    color: #64748B;
+}
+
+.survey-card-content strong {
+    color: #1B2944;
+}
+
+.survey-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.survey-card-actions button {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.survey-card-actions button:first-child {
+    background: #1B2944;
+    color: white;
+}
+
+.survey-card-actions button:nth-child(2) {
+    background: #ECEFF4;
+    color: #1B2944;
+}
+
+.survey-card-actions button:last-child {
+    background: #F8D7DA;
+    color: #C62828;
+}
+
+.survey-card-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.survey-card-edit-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.survey-card-edit-form input,
+.survey-card-edit-form select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #D8DEE9;
+    border-radius: 7px;
+    box-sizing: border-box;
+}

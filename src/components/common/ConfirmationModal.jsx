@@ -1,4 +1,4 @@
-﻿import "./ConfirmationModal.css";
+import "./ConfirmationModal.css";
 
 function ConfirmationModal({
     isOpen,

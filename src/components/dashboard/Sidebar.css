@@ -4,6 +4,7 @@
     top: 0;
     bottom: 0;
     width: 260px;
+    box-sizing: border-box;
     background: #1B2944;
     padding: 30px;
     z-index: 500;

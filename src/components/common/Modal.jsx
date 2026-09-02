@@ -15,6 +15,7 @@ function Modal({ isOpen, onClose, title, children }) {
                     <h2>{title}</h2>
 
                     <button
+                        type="button"
                         className="close-btn"
                         onClick={onClose}
                     >

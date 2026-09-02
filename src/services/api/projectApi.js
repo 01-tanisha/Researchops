@@ -1,5 +1,7 @@
 const API_URL = "http://127.0.0.1:8000/api/projects/";
 const ACTIVITY_URL = "http://127.0.0.1:8000/api/projects/activity/";
+const USERS_URL = "http://127.0.0.1:8000/api/users/";
+
 
 
 export async function getProjects() {
@@ -12,6 +14,7 @@ export async function getProjects() {
 
     return await response.json();
 }
+
 
 
 export async function createProject(projectData) {
@@ -34,6 +37,7 @@ export async function createProject(projectData) {
 
     return await response.json();
 }
+
 
 
 export async function updateProject(id, projectData) {
@@ -61,6 +65,7 @@ export async function updateProject(id, projectData) {
 }
 
 
+
 export async function deleteProject(id) {
 
     const response = await fetch(
@@ -78,11 +83,26 @@ export async function deleteProject(id) {
 }
 
 
+
 export async function getProjectActivity() {
+
     const response = await fetch(ACTIVITY_URL);
 
     if (!response.ok) {
         throw new Error("Failed to fetch project activity.");
+    }
+
+    return await response.json();
+}
+
+
+
+export async function getUsers() {
+
+    const response = await fetch(USERS_URL);
+
+    if (!response.ok) {
+        throw new Error("Failed to fetch users.");
     }
 
     return await response.json();
