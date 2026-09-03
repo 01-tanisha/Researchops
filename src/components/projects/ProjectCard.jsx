@@ -1,29 +1,28 @@
 import "./ProjectCard.css";
 
-
 function ProjectCard({ project, onDelete, onEdit, onView }) {
-
     const statusClass = String(
         project.status ?? ""
     ).toLowerCase();
 
     function handleView() {
-
         if (onView) {
             onView(project);
         }
-
     }
 
-
     return (
-
         <div className="project-card">
 
             <h3>{project.title}</h3>
 
             <p>
                 <strong>Client:</strong> {project.client}
+            </p>
+
+            <p>
+                <strong>Budget:</strong>{" "}
+                ₹{Number(project.budget ?? 0).toLocaleString("en-IN")}
             </p>
 
             <span className={`status ${statusClass}`}>
@@ -56,7 +55,6 @@ function ProjectCard({ project, onDelete, onEdit, onView }) {
             </div>
 
         </div>
-
     );
 }
 

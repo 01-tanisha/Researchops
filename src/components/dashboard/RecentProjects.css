@@ -1,60 +1,58 @@
-.recent-projects{
-
-    margin-top:40px;
-
-    background:white;
-
-    border-radius:12px;
-
-    padding:25px;
-
-    box-shadow:0 3px 10px rgba(0,0,0,.08);
+.recent-projects {
+    margin-top: 40px;
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
 }
 
-.recent-projects h2{
-
-    margin:0;
+.recent-projects h2 {
+    margin: 0;
 }
 
-.recent-projects-empty{
-
-    margin-top:16px;
-
-    color:#64748b;
+.recent-projects-empty {
+    margin-top: 16px;
+    color: #64748b;
 }
 
-.recent-projects table{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-    margin-top:20px;
+.recent-projects table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
 .recent-projects th,
-.recent-projects td{
-
-    padding:16px 18px;
-
-    text-align:left;
+.recent-projects td {
+    padding: 16px 18px;
+    text-align: left;
 }
 
-.recent-projects th{
-
-    background:#1B2944;
-
-    color:white;
-
-    font-weight:600;
+.recent-projects th {
+    background: #1B2944;
+    color: white;
+    font-weight: 600;
 }
 
-.recent-projects tbody tr:nth-child(even){
-
-    background:#f9fafc;
+.recent-projects tbody tr:nth-child(even) {
+    background: #f9fafc;
 }
 
-.recent-projects tbody tr:hover{
+.recent-projects tbody tr:hover {
+    background: #eef4ff;
+}
 
-    background:#eef4ff;
+.recent-projects td:nth-child(3) {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .recent-projects {
+        padding: 18px;
+        overflow-x: auto;
+    }
+
+    .recent-projects table {
+        min-width: 650px;
+    }
 }

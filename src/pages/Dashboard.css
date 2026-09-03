@@ -1,3 +1,7 @@
+/* =========================
+   DASHBOARD PAGE
+========================= */
+
 .dashboard-page {
     display: flex;
     min-height: 100vh;
@@ -15,103 +19,170 @@
 
 .dashboard-content {
     flex: 1;
-    padding: 0;
+    width: 100%;
+    padding: 30px 40px;
+    box-sizing: border-box;
 }
+
+
+/* =========================
+   OVERVIEW
+========================= */
 
 .dashboard-overview-shell {
     width: 100%;
     margin: 0 0 24px;
 }
 
+.dashboard-title {
+    margin: 0 0 25px;
+    font-size: 36px;
+    font-weight: 700;
+    color: #111827;
+}
+
+
+/* =========================
+   STAT CARDS
+========================= */
+
 .dashboard-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-top: 18px;
 }
 
-.dashboard-panels {
-    display: flex;
-    flex-direction: column;
+/* =========================
+   STATUS OVERVIEW
+========================= */
+
+.status-overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 24px;
-    margin-top: 24px;
-    align-items: stretch;
-}
-
-.dashboard-panels > * {
     width: 100%;
+    margin-top: 30px;
 }
 
-.dashboard-section-title {
-    margin-top: 40px;
-    margin-bottom: 16px;
-}
-
-.dashboard-table-wrap {
-    background: white;
+.status-section {
+    background: #ffffff;
+    padding: 24px;
     border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
-.dashboard-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.dashboard-table th,
-.dashboard-table td {
-    padding: 16px 20px;
-    text-align: left;
-}
-
-.dashboard-table thead th {
-    background: #1B2944;
-    color: white;
-    font-weight: 600;
-}
-
-.dashboard-table tbody tr {
-    border-top: 1px solid #e6e9ef;
-}
-
-.dashboard-table tbody tr:nth-child(even) {
-    background: #f9fafc;
-}
-
-.dashboard-table tbody tr:hover {
-    background: #eef4ff;
-}
-
-@media (max-width: 992px) {
-    .dashboard-panels {
-        grid-template-columns: 1fr;
-    }
-}
-
-.dashboard-title{
-    margin: 0 0 25px;
-    font-size: 36px;
+.status-section h2 {
+    margin: 0 0 20px;
+    color: #1B2944;
+    font-size: 20px;
     font-weight: 700;
 }
 
-@media (max-width: 992px) {
-    .dashboard-panels {
-        gap: 20px;
+.status-items {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.status-section:nth-child(2) .status-items {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.status-item {
+    padding: 16px 10px;
+    border-radius: 10px;
+    background: #F4F6F9;
+    text-align: center;
+    border: 1px solid #E6E9EF;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.status-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.status-item strong {
+    display: block;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1B2944;
+}
+
+.status-item span {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #64748B;
+}
+
+
+/* Project status */
+
+.status-section:first-child .status-item:nth-child(1) strong {
+    color: #4CAF50;
+}
+
+.status-section:first-child .status-item:nth-child(2) strong {
+    color: #2196F3;
+}
+
+.status-section:first-child .status-item:nth-child(3) strong {
+    color: #FF9800;
+}
+
+.status-section:first-child .status-item:nth-child(4) strong {
+    color: #9C27B0;
+}
+
+.status-section:first-child .status-item:nth-child(5) strong {
+    color: #607D8B;
+}
+
+
+/* Survey status */
+
+.status-section:nth-child(2) .status-item:nth-child(1) strong {
+    color: #4CAF50;
+}
+
+.status-section:nth-child(2) .status-item:nth-child(2) strong {
+    color: #FF9800;
+}
+
+.status-section:nth-child(2) .status-item:nth-child(3) strong {
+    color: #2196F3;
+}
+
+.status-section:nth-child(2) .status-item:nth-child(4) strong {
+    color: #9C27B0;
+}
+
+.status-section:nth-child(2) .status-item:nth-child(5) strong {
+    color: #64748B;
+}
+
+
+/* =========================
+   STATUS RESPONSIVE
+========================= */
+
+@media (max-width: 1100px) {
+
+    .status-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .status-section:nth-child(2) .status-items {
+        grid-template-columns: repeat(5, 1fr);
     }
 }
 
-.dashboard-loading {
-  margin-bottom: 16px;
-  font-size: 14px;
-  color: #666;
-}
+@media (max-width: 768px) {
 
-.dashboard-error {
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  border-radius: 6px;
-  background: #fdecec;
-  color: #c62828;
-  font-size: 14px;
+    .status-items,
+    .status-section:nth-child(2) .status-items {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

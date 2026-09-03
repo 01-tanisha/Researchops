@@ -5,53 +5,158 @@ import RecentProjects from "../components/dashboard/RecentProjects";
 import ActivityPanel from "../components/dashboard/ActivityPanel";
 import Users from "../components/dashboard/Users";
 import "./Dashboard.css";
+
 import {
   getProjectActivity,
-  getProjects
+  getProjects,
+  getUsers,
 } from "../services/api/projectApi";
 
+import { getSurveys } from "../services/api/surveyApi";
 
 function Dashboard() {
-
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [projectCount, setProjectCount] = useState(0);
+  const [surveyCount, setSurveyCount] = useState(0);
+  const [userCount, setUserCount] = useState(0);
+  const [revenue, setRevenue] = useState(0);
+
+  // Project status counts
+  const [projectStatusCounts, setProjectStatusCounts] = useState({
+    Active: 0,
+    Completed: 0,
+    Paused: 0,
+    Billed: 0,
+    Draft: 0,
+  });
+
+  // Survey status counts
+  const [surveyStatusCounts, setSurveyStatusCounts] = useState({
+    Active: 0,
+    Paused: 0,
+    Completed: 0,
+    Billed: 0,
+    Draft: 0,
+  });
+
   const [activities, setActivities] = useState([]);
   const [error, setError] = useState("");
 
-
   useEffect(() => {
-
     async function loadDashboardData() {
-
       try {
-
+        setLoading(true);
         setError("");
 
+        // =========================
+        // PROJECTS
+        // =========================
         const projectsData = await getProjects();
 
-        const safeProjects =
-          Array.isArray(projectsData)
-            ? projectsData
-            : [];
+        const safeProjects = Array.isArray(projectsData)
+          ? projectsData
+          : [];
 
         setProjects(safeProjects);
         setProjectCount(safeProjects.length);
 
+        // Project status counts
+        const projectStatusData = {
+          Active: safeProjects.filter(
+            (project) => project.status === "Active"
+          ).length,
 
-        const activityData =
-          await getProjectActivity();
+          Completed: safeProjects.filter(
+            (project) => project.status === "Completed"
+          ).length,
 
-        const safeActivities =
-          Array.isArray(activityData)
-            ? activityData
-            : [];
+          Paused: safeProjects.filter(
+            (project) => project.status === "Paused"
+          ).length,
+
+          Billed: safeProjects.filter(
+            (project) => project.status === "Billed"
+          ).length,
+
+          Draft: safeProjects.filter(
+            (project) => project.status === "Draft"
+          ).length,
+        };
+
+        setProjectStatusCounts(projectStatusData);
+
+        // =========================
+        // TOTAL PROJECT BUDGET
+        // =========================
+        const totalBudget = safeProjects.reduce(
+          (total, project) =>
+            total + Number(project.budget || 0),
+          0
+        );
+
+        setRevenue(totalBudget);
+
+        // =========================
+        // SURVEYS
+        // =========================
+        const surveysData = await getSurveys();
+
+        const safeSurveys = Array.isArray(surveysData)
+          ? surveysData
+          : [];
+
+        setSurveyCount(safeSurveys.length);
+
+        // Survey status counts
+        const surveyStatusData = {
+          Active: safeSurveys.filter(
+            (survey) => survey.status === "Active"
+          ).length,
+
+          Paused: safeSurveys.filter(
+            (survey) => survey.status === "Paused"
+          ).length,
+
+          Completed: safeSurveys.filter(
+            (survey) => survey.status === "Completed"
+          ).length,
+
+          Billed: safeSurveys.filter(
+            (survey) => survey.status === "Billed"
+          ).length,
+
+          Draft: safeSurveys.filter(
+            (survey) => survey.status === "Draft"
+          ).length,
+        };
+
+        setSurveyStatusCounts(surveyStatusData);
+
+        // =========================
+        // USERS / VENDORS
+        // =========================
+        const usersData = await getUsers();
+
+        const safeUsers = Array.isArray(usersData)
+          ? usersData
+          : [];
+
+        setUserCount(safeUsers.length);
+
+        // =========================
+        // RECENT ACTIVITY
+        // =========================
+        const activityData = await getProjectActivity();
+
+        const safeActivities = Array.isArray(activityData)
+          ? activityData
+          : [];
 
         setActivities(safeActivities);
 
-
       } catch (error) {
-
         console.error(
           "Failed to load dashboard data:",
           error
@@ -63,109 +168,244 @@ function Dashboard() {
 
         setProjects([]);
         setProjectCount(0);
+        setSurveyCount(0);
+        setUserCount(0);
+        setRevenue(0);
         setActivities([]);
 
+        setProjectStatusCounts({
+          Active: 0,
+          Completed: 0,
+          Paused: 0,
+          Billed: 0,
+          Draft: 0,
+        });
+
+        setSurveyStatusCounts({
+          Active: 0,
+          Paused: 0,
+          Completed: 0,
+          Billed: 0,
+          Draft: 0,
+        });
+
       } finally {
-
         setLoading(false);
-
       }
-
     }
 
-
     loadDashboardData();
-
   }, []);
 
-
   return (
-
     <DashboardLayout>
-
       <div className="dashboard-content">
 
+        {/* =========================
+            LOADING
+        ========================= */}
+        {loading && (
+          <p className="dashboard-loading">
+            Loading dashboard...
+          </p>
+        )}
 
-          {loading && (
+        {/* =========================
+            ERROR
+        ========================= */}
+        {error && (
+          <p className="dashboard-error">
+            {error}
+          </p>
+        )}
 
-            <p className="dashboard-loading">
-              Loading dashboard...
-            </p>
+        {/* =========================
+            OVERVIEW
+        ========================= */}
+        <div className="dashboard-overview-shell">
 
-          )}
+          <h1 className="dashboard-title">
+            Overview
+          </h1>
 
+          <div className="dashboard-stats-grid">
 
-          {error && (
+            <StatCard
+              title="Projects"
+              value={projectCount}
+              color="#4CAF50"
+            />
 
-            <p className="dashboard-error">
-              {error}
-            </p>
+            <StatCard
+              title="Vendors"
+              value={userCount}
+              color="#2196F3"
+            />
 
-          )}
+            <StatCard
+              title="Surveys"
+              value={surveyCount}
+              color="#FF9800"
+            />
 
+            <StatCard
+              title="Total Budget"
+              value={`₹${revenue.toLocaleString("en-IN")}`}
+              color="#9C27B0"
+            />
 
-          <div className="dashboard-overview-shell">
+          </div>
+        </div>
 
-            <h1 className="dashboard-title">
-              Overview
-            </h1>
+        {/* =========================
+            STATUS OVERVIEW
+        ========================= */}
+        <div className="status-overview">
 
+          {/* PROJECT STATUS */}
+          <div className="status-section">
 
-            <div className="dashboard-stats-grid">
+            <h2>Project Status</h2>
 
-              <StatCard
-                title="Projects"
-                value={projectCount}
-                color="#4CAF50"
-              />
+            <div className="status-items">
 
-              <StatCard
-                title="Vendors"
-                value="15"
-                color="#2196F3"
-              />
+              <div className="status-item">
+                <strong>
+                  {projectStatusCounts.Active}
+                </strong>
 
-              <StatCard
-                title="Surveys"
-                value="320"
-                color="#FF9800"
-              />
+                <span>
+                  Active
+                </span>
+              </div>
 
-              <StatCard
-                title="Revenue"
-                value="$12,400"
-                color="#9C27B0"
-              />
+              <div className="status-item">
+                <strong>
+                  {projectStatusCounts.Paused}
+                </strong>
+
+                <span>
+                  Paused
+                </span>
+              </div>
+
+              <div className="status-item">
+                <strong>
+                  {projectStatusCounts.Completed}
+                </strong>
+
+                <span>
+                  Completed
+                </span>
+              </div>
+
+              <div className="status-item">
+                <strong>
+                  {projectStatusCounts.Billed}
+                </strong>
+
+                <span>
+                  Billed
+                </span>
+              </div>
+
+              <div className="status-item">
+                <strong>
+                  {projectStatusCounts.Draft}
+                </strong>
+
+                <span>
+                  Draft
+                </span>
+              </div>
 
             </div>
-
           </div>
 
+          {/* SURVEY STATUS */}
+          <div className="status-section">
 
-          <div className="dashboard-panels">
+            <h2>Survey Status</h2>
 
-            <RecentProjects
-              projects={projects}
-            />
+            <div className="status-items">
 
-            <ActivityPanel
-              activities={activities}
-              loading={loading}
-              error={error}
-            />
+              <div className="status-item">
+                <strong>
+                  {surveyStatusCounts.Active}
+                </strong>
 
-            <Users />
+                <span>
+                  Active
+                </span>
+              </div>
 
+              <div className="status-item">
+                <strong>
+                  {surveyStatusCounts.Paused}
+                </strong>
+
+                <span>
+                  Paused
+                </span>
+              </div>
+
+              <div className="status-item">
+                <strong>
+                  {surveyStatusCounts.Completed}
+                </strong>
+
+                <span>
+                  Completed
+                </span>
+              </div>
+
+              <div className="status-item">
+                <strong>
+                  {surveyStatusCounts.Billed}
+                </strong>
+
+                <span>
+                  Billed
+                </span>
+              </div>
+
+              <div className="status-item">
+                <strong>
+                  {surveyStatusCounts.Draft}
+                </strong>
+
+                <span>
+                  Draft
+                </span>
+              </div>
+
+            </div>
           </div>
 
+        </div>
+
+        {/* =========================
+            DASHBOARD PANELS
+        ========================= */}
+        <div className="dashboard-panels">
+
+          <RecentProjects
+            projects={projects}
+          />
+
+          <ActivityPanel
+            activities={activities}
+            loading={loading}
+            error={error}
+          />
+
+          <Users />
+
+        </div>
 
       </div>
-
     </DashboardLayout>
-
   );
-
 }
-
 
 export default Dashboard;

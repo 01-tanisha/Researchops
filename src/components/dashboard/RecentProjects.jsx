@@ -17,6 +17,7 @@ function RecentProjects({ projects = [] }) {
             <tr>
               <th>Project</th>
               <th>Client</th>
+              <th>Budget</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -26,6 +27,9 @@ function RecentProjects({ projects = [] }) {
               <tr key={project.id}>
                 <td>{project.title}</td>
                 <td>{project.client}</td>
+                <td>
+                  ₹{Number(project.budget ?? 0).toLocaleString("en-IN")}
+                </td>
                 <td>{project.status}</td>
               </tr>
             ))}

@@ -318,3 +318,19 @@ export const submitScreeningAnswers = async (
 
     return data;
 };
+
+export const getSurveyAnalytics = async (surveyId) => {
+    const response = await fetch(
+        `${API_BASE}/api/surveys/${surveyId}/analytics/`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.error || "Failed to fetch survey analytics."
+        );
+    }
+
+    return data;
+};

@@ -1,0 +1,150 @@
+.vendors-page {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.vendors-title {
+    margin: 0 0 25px;
+    font-size: 36px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.vendor-form-card,
+.vendors-list-card {
+    background: #ffffff;
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.vendor-form-card h2,
+.vendors-list-card h2 {
+    margin: 0 0 20px;
+    color: #1B2944;
+}
+
+.vendor-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.vendor-form-grid label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vendor-form-grid input {
+    width: 100%;
+    padding: 11px 12px;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    font-size: 14px;
+    outline: none;
+}
+
+.vendor-form-grid input:focus {
+    border-color: #1B2944;
+}
+
+.vendor-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.vendor-form-actions button,
+.vendor-actions button {
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    background: #1B2944;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.vendor-form-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.vendor-cancel-button {
+    background: #64748b !important;
+}
+
+.vendor-error {
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    border-radius: 6px;
+    background: #FDECEC;
+    color: #C62828;
+}
+
+.vendors-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vendors-list-header span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.vendors-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.vendors-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vendors-table th,
+.vendors-table td {
+    padding: 14px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.vendors-table th {
+    color: #475569;
+    font-size: 13px;
+    background: #f8fafc;
+}
+
+.vendors-table td {
+    color: #374151;
+    font-size: 14px;
+}
+
+.vendor-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.vendor-actions .delete-button {
+    background: #dc2626;
+}
+
+.vendors-message {
+    color: #64748b;
+    padding: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .vendor-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vendors-table {
+        min-width: 700px;
+    }
+}

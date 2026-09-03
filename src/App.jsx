@@ -7,6 +7,8 @@ import Projects from "./pages/Projects";
 import Surveys from "./pages/Surveys";
 import NotFound from "./pages/NotFound";
 import DemoSurvey from "./pages/DemoSurvey";
+import Reports from "./pages/Reports";
+import Vendors from "./pages/Vendors";
 function App() {
   return (
     <Routes>
@@ -15,6 +17,8 @@ function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/projects" element={<Projects />} />
       <Route path="/surveys" element={<Surveys />} />
+      <Route path="/vendors" element={<Vendors />} />
+      <Route path="/reports" element={<Reports />} />
       <Route path="/demo/surveys/:surveyId" element={<DemoSurvey />} />
       <Route path="/survey/:publicToken" element={<PublicSurvey />} />
       <Route path="/public-survey/:publicToken" element={<PublicSurvey />} />

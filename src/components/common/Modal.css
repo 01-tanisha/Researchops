@@ -4,6 +4,7 @@
     position: fixed;
     inset: 0;
     background: rgba(15, 23, 42, 0.65);
+    -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
     display: flex;
     justify-content: center;
@@ -17,6 +18,7 @@
 .modal {
     width: 620px;
     max-width: 92%;
+    max-height: 92vh;
     background: #ffffff;
     border-radius: 18px;
     overflow: hidden;
@@ -52,6 +54,8 @@
 
 .modal-body {
     padding: 30px;
+    max-height: calc(92vh - 78px);
+    overflow-y: auto;
 }
 
 @keyframes slideUp {
