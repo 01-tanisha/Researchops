@@ -9,32 +9,19 @@ import { getSurveys } from "../services/api/surveyApi";
 
 import "./Surveys.css";
 
-
 function Surveys() {
-
     const [surveys, setSurveys] = useState([]);
 
-    const [isLoading, setIsLoading] =
-        useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const [error, setError] =
-        useState("");
+    const [showSurveyForm, setShowSurveyForm] = useState(false);
+    const [selectedSurvey, setSelectedSurvey] = useState(null);
 
-    const [showSurveyForm, setShowSurveyForm] =
-        useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("All");
 
-    const [selectedSurvey, setSelectedSurvey] =
-        useState(null);
-
-    const [searchTerm, setSearchTerm] =
-        useState("");
-
-    const [statusFilter, setStatusFilter] =
-        useState("All");
-
-    const [refetchTrigger, setRefetchTrigger] =
-        useState(0);
-
+    const [refetchTrigger, setRefetchTrigger] = useState(0);
 
     // --------------------------------------------------
     // Refresh Surveys
@@ -44,17 +31,13 @@ function Surveys() {
         setRefetchTrigger((previous) => previous + 1);
     };
 
-
     // --------------------------------------------------
     // Fetch Surveys
     // --------------------------------------------------
 
     useEffect(() => {
-
         const fetchSurveys = async () => {
-
             try {
-
                 setIsLoading(true);
                 setError("");
 
@@ -65,36 +48,29 @@ function Surveys() {
                         ? data
                         : []
                 );
-
             } catch (error) {
-
                 console.error(
                     "Error fetching surveys:",
                     error
                 );
 
                 setError(
-                    "Unable to load surveys."
+                    error.message ||
+                        "Unable to load surveys."
                 );
-
             } finally {
-
                 setIsLoading(false);
-
             }
         };
 
         fetchSurveys();
-
     }, [refetchTrigger]);
-
 
     // --------------------------------------------------
     // Survey Created
     // --------------------------------------------------
 
     const handleSurveyCreated = (newSurvey) => {
-
         setSurveys((previousSurveys) => [
             newSurvey,
             ...previousSurveys,
@@ -103,17 +79,20 @@ function Surveys() {
         setShowSurveyForm(false);
     };
 
-
     // --------------------------------------------------
     // Survey Updated
     // --------------------------------------------------
 
     const handleSurveyUpdated = (updatedSurvey) => {
+        if (!updatedSurvey?.id) return;
 
         setSurveys((previousSurveys) =>
             previousSurveys.map((survey) =>
                 survey.id === updatedSurvey.id
-                    ? updatedSurvey
+                    ? {
+                          ...survey,
+                          ...updatedSurvey,
+                      }
                     : survey
             )
         );
@@ -122,17 +101,18 @@ function Surveys() {
             selectedSurvey &&
             selectedSurvey.id === updatedSurvey.id
         ) {
-            setSelectedSurvey(updatedSurvey);
+            setSelectedSurvey((previousSurvey) => ({
+                ...previousSurvey,
+                ...updatedSurvey,
+            }));
         }
     };
-
 
     // --------------------------------------------------
     // Survey Deleted
     // --------------------------------------------------
 
     const handleSurveyDeleted = (surveyId) => {
-
         setSurveys((previousSurveys) =>
             previousSurveys.filter(
                 (survey) =>
@@ -147,7 +127,6 @@ function Surveys() {
             setSelectedSurvey(null);
         }
     };
-
 
     // --------------------------------------------------
     // Survey Statistics
@@ -165,14 +144,12 @@ function Surveys() {
             survey.status === "Completed"
     ).length;
 
-
     // --------------------------------------------------
     // Filter Surveys
     // --------------------------------------------------
 
     const filteredSurveys = surveys.filter(
         (survey) => {
-
             const search =
                 searchTerm
                     .toLowerCase()
@@ -204,21 +181,16 @@ function Surveys() {
         }
     );
 
-
     // --------------------------------------------------
     // Clear Filters
     // --------------------------------------------------
 
     const clearFilters = () => {
-
         setSearchTerm("");
         setStatusFilter("All");
-
     };
 
-
     return (
-
         <DashboardLayout>
 
             <div className="surveys-page">
@@ -230,16 +202,12 @@ function Surveys() {
                 <div className="surveys-page-header">
 
                     <div>
-
-                        <h1>
-                            Surveys
-                        </h1>
+                        <h1>Surveys</h1>
 
                         <p>
                             Manage your research
                             surveys and questions.
                         </p>
-
                     </div>
 
                     <button
@@ -254,100 +222,79 @@ function Surveys() {
 
                 </div>
 
-
                 {/* ------------------------------------ */}
                 {/* Survey Statistics */}
                 {/* ------------------------------------ */}
 
                 {!isLoading &&
                     !error && (
+                        <div className="survey-stats">
 
-                    <div className="survey-stats">
+                            <div className="survey-stat-card">
 
-                        {/* Total Surveys */}
+                                <div className="survey-stat-icon">
+                                    📋
+                                </div>
 
-                        <div className="survey-stat-card">
+                                <div className="survey-stat-content">
+                                    <span>
+                                        Total Surveys
+                                    </span>
 
-                            <div className="survey-stat-icon">
-                                📋
-                            </div>
-
-                            <div className="survey-stat-content">
-
-                                <span>
-                                    Total Surveys
-                                </span>
-
-                                <h2>
-                                    {totalSurveys}
-                                </h2>
+                                    <h2>
+                                        {totalSurveys}
+                                    </h2>
+                                </div>
 
                             </div>
 
-                        </div>
+                            <div className="survey-stat-card">
 
+                                <div className="survey-stat-icon">
+                                    ●
+                                </div>
 
-                        {/* Active Surveys */}
+                                <div className="survey-stat-content">
+                                    <span>
+                                        Active Surveys
+                                    </span>
 
-                        <div className="survey-stat-card">
-
-                            <div className="survey-stat-icon">
-                                ●
-                            </div>
-
-                            <div className="survey-stat-content">
-
-                                <span>
-                                    Active Surveys
-                                </span>
-
-                                <h2>
-                                    {activeSurveys}
-                                </h2>
+                                    <h2>
+                                        {activeSurveys}
+                                    </h2>
+                                </div>
 
                             </div>
 
-                        </div>
+                            <div className="survey-stat-card">
 
+                                <div className="survey-stat-icon">
+                                    ✓
+                                </div>
 
-                        {/* Completed Surveys */}
+                                <div className="survey-stat-content">
+                                    <span>
+                                        Completed Surveys
+                                    </span>
 
-                        <div className="survey-stat-card">
-
-                            <div className="survey-stat-icon">
-                                ✓
-                            </div>
-
-                            <div className="survey-stat-content">
-
-                                <span>
-                                    Completed Surveys
-                                </span>
-
-                                <h2>
-                                    {completedSurveys}
-                                </h2>
+                                    <h2>
+                                        {completedSurveys}
+                                    </h2>
+                                </div>
 
                             </div>
 
                         </div>
-
-                    </div>
-
-                )}
-
+                    )}
 
                 {/* ------------------------------------ */}
                 {/* Error */}
                 {/* ------------------------------------ */}
 
                 {error && (
-
                     <div className="surveys-error">
 
-                        <p>
-                            {error}
-                        </p>
+                        <p>{error}</p>
 
                         <button
                             type="button"
@@ -357,9 +304,7 @@ function Surveys() {
                         </button>
 
                     </div>
-
                 )}
-
 
                 {/* ------------------------------------ */}
                 {/* Filters */}
@@ -378,7 +323,6 @@ function Surveys() {
                         }
                     />
 
-
                     <select
                         value={statusFilter}
                         onChange={(event) =>
@@ -387,13 +331,16 @@ function Surveys() {
                             )
                         }
                     >
-
                         <option value="All">
                             All Status
                         </option>
 
                         <option value="Active">
                             Active
+                        </option>
+
+                        <option value="Paused">
+                            Paused
                         </option>
 
                         <option value="Completed">
@@ -408,12 +355,13 @@ function Surveys() {
                             Draft
                         </option>
 
+                        <option value="Quota Full">
+                            Quota Full
+                        </option>
                     </select>
-
 
                     {(searchTerm ||
                         statusFilter !== "All") && (
-
                         <button
                             type="button"
                             className="clear-filter-btn"
@@ -421,11 +369,9 @@ function Surveys() {
                         >
                             Clear
                         </button>
-
                     )}
 
                 </div>
-
 
                 {/* ------------------------------------ */}
                 {/* Survey Count */}
@@ -433,44 +379,36 @@ function Surveys() {
 
                 {!isLoading &&
                     !error && (
+                        <div className="survey-count">
 
-                    <div className="survey-count">
+                            Showing{" "}
 
-                        Showing{" "}
+                            <strong>
+                                {filteredSurveys.length}
+                            </strong>
 
-                        <strong>
-                            {filteredSurveys.length}
-                        </strong>
+                            {" "}of{" "}
 
-                        {" "}of{" "}
+                            <strong>
+                                {surveys.length}
+                            </strong>
 
-                        <strong>
-                            {surveys.length}
-                        </strong>
+                            {" "}surveys
 
-                        {" "}surveys
-
-                    </div>
-
-                )}
-
+                        </div>
+                    )}
 
                 {/* ------------------------------------ */}
                 {/* Loading */}
                 {/* ------------------------------------ */}
 
                 {isLoading && (
-
                     <div className="surveys-loading">
-
                         <p>
                             Loading surveys...
                         </p>
-
                     </div>
-
                 )}
-
 
                 {/* ------------------------------------ */}
                 {/* No Surveys */}
@@ -479,22 +417,19 @@ function Surveys() {
                 {!isLoading &&
                     !error &&
                     surveys.length === 0 && (
+                        <div className="surveys-empty">
 
-                    <div className="surveys-empty">
+                            <h3>
+                                No surveys yet
+                            </h3>
 
-                        <h3>
-                            No surveys yet
-                        </h3>
+                            <p>
+                                Create your first
+                                survey to get started.
+                            </p>
 
-                        <p>
-                            Create your first
-                            survey to get started.
-                        </p>
-
-                    </div>
-
-                )}
-
+                        </div>
+                    )}
 
                 {/* ------------------------------------ */}
                 {/* No Search Results */}
@@ -504,29 +439,26 @@ function Surveys() {
                     !error &&
                     surveys.length > 0 &&
                     filteredSurveys.length === 0 && (
+                        <div className="surveys-empty">
 
-                    <div className="surveys-empty">
+                            <h3>
+                                No surveys found
+                            </h3>
 
-                        <h3>
-                            No surveys found
-                        </h3>
+                            <p>
+                                Try changing your
+                                search or filter.
+                            </p>
 
-                        <p>
-                            Try changing your
-                            search or filter.
-                        </p>
+                            <button
+                                type="button"
+                                onClick={clearFilters}
+                            >
+                                Clear Filters
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={clearFilters}
-                        >
-                            Clear Filters
-                        </button>
-
-                    </div>
-
-                )}
-
+                        </div>
+                    )}
 
                 {/* ------------------------------------ */}
                 {/* Survey List */}
@@ -535,46 +467,41 @@ function Surveys() {
                 {!isLoading &&
                     !error &&
                     filteredSurveys.length > 0 && (
+                        <div className="surveys-grid">
 
-                    <div className="surveys-grid">
+                            {filteredSurveys.map(
+                                (survey) => (
+                                    <SurveyCard
+                                        key={survey.id}
+                                        survey={survey}
 
-                        {filteredSurveys.map(
-                            (survey) => (
+                                        onView={() =>
+                                            setSelectedSurvey(
+                                                survey
+                                            )
+                                        }
 
-                            <SurveyCard
-                                key={survey.id}
-                                survey={survey}
+                                        onSurveyUpdated={
+                                            handleSurveyUpdated
+                                        }
 
-                                onView={() =>
-                                    setSelectedSurvey(
-                                        survey
-                                    )
-                                }
+                                        onSurveyDeleted={
+                                            handleSurveyDeleted
+                                        }
+                                    />
+                                )
+                            )}
 
-                                onSurveyUpdated={
-                                    handleSurveyUpdated
-                                }
-
-                                onSurveyDeleted={
-                                    handleSurveyDeleted
-                                }
-                            />
-
-                        ))}
-
-                    </div>
-
-                )}
+                        </div>
+                    )}
 
             </div>
-
 
             {/* ---------------------------------------- */}
             {/* Create Survey Modal */}
             {/* ---------------------------------------- */}
 
             {showSurveyForm && (
-
                 <div className="survey-modal-overlay">
 
                     <div className="survey-modal">
@@ -594,16 +521,13 @@ function Surveys() {
                     </div>
 
                 </div>
-
             )}
-
 
             {/* ---------------------------------------- */}
             {/* Survey Details Modal */}
             {/* ---------------------------------------- */}
 
             {selectedSurvey && (
-
                 <div className="survey-modal-overlay">
 
                     <div className="survey-modal">
@@ -625,14 +549,10 @@ function Surveys() {
                     </div>
 
                 </div>
-
             )}
 
-
         </DashboardLayout>
-
     );
 }
-
 
 export default Surveys;

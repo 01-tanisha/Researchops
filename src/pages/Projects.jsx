@@ -13,12 +13,15 @@ import {
     getProjects,
     createProject,
     updateProject as updateProjectApi,
-    deleteProject as deleteProjectApi
+    deleteProject as deleteProjectApi,
+    getClients,
 } from "../services/api/projectApi";
 
 function Projects() {
     const [searchTerm, setSearchTerm] = useState("");
     const [projects, setProjects] = useState([]);
+    const [clients, setClients] = useState([]);
+
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -26,6 +29,7 @@ function Projects() {
 
     const [title, setTitle] = useState("");
     const [client, setClient] = useState("");
+    const [clientId, setClientId] = useState("");
     const [status, setStatus] = useState("Active");
     const [budget, setBudget] = useState("");
 
@@ -35,30 +39,55 @@ function Projects() {
     const [confirmation, setConfirmation] = useState({
         isOpen: false,
         type: null,
-        projectId: null
+        projectId: null,
     });
 
     useEffect(() => {
-        async function fetchProjects() {
+        async function fetchData() {
             try {
                 setError("");
 
-                const data = await getProjects();
+                const [projectsData, clientsData] = await Promise.all([
+                    getProjects(),
+                    getClients(),
+                ]);
 
-                setProjects(Array.isArray(data) ? data : []);
+                setProjects(
+                    Array.isArray(projectsData) ? projectsData : []
+                );
+
+                setClients(
+                    Array.isArray(clientsData) ? clientsData : []
+                );
             } catch (error) {
-                console.error("Error fetching projects:", error);
-                setError("Unable to load projects. Please try again.");
+                console.error("Error fetching project data:", error);
+                setError(
+                    "Unable to load projects or clients. Please try again."
+                );
             } finally {
                 setIsLoading(false);
             }
         }
 
-        fetchProjects();
+        fetchData();
     }, []);
 
+    function handleClientChange(value) {
+        setClientId(value);
+
+        const selectedClient = clients.find(
+            (item) => String(item.id) === String(value)
+        );
+
+        setClient(
+            selectedClient
+                ? selectedClient.company || selectedClient.name
+                : ""
+        );
+    }
+
     async function addProject() {
-        if (title.trim() === "" || client.trim() === "") {
+        if (title.trim() === "" || !clientId) {
             alert("Please fill all fields.");
             return;
         }
@@ -66,8 +95,9 @@ function Projects() {
         const newProject = {
             title,
             client,
+            client_id: Number(clientId),
             status,
-            budget: budget === "" ? 0 : Number(budget)
+            budget: budget === "" ? 0 : Number(budget),
         };
 
         try {
@@ -75,17 +105,16 @@ function Projects() {
 
             setProjects((currentProjects) => [
                 ...currentProjects,
-                createdProject
+                createdProject,
             ]);
 
             resetForm();
-
             setIsModalOpen(false);
 
             setConfirmation({
                 isOpen: false,
                 type: null,
-                projectId: null
+                projectId: null,
             });
         } catch (error) {
             console.error("Error adding project:", error);
@@ -96,7 +125,7 @@ function Projects() {
     async function updateProject() {
         if (!editingProject) return;
 
-        if (title.trim() === "" || client.trim() === "") {
+        if (title.trim() === "" || !clientId) {
             alert("Please fill all fields.");
             return;
         }
@@ -107,8 +136,9 @@ function Projects() {
                 {
                     title,
                     client,
+                    client_id: Number(clientId),
                     status,
-                    budget: budget === "" ? 0 : Number(budget)
+                    budget: budget === "" ? 0 : Number(budget),
                 }
             );
 
@@ -128,11 +158,11 @@ function Projects() {
             setConfirmation({
                 isOpen: false,
                 type: null,
-                projectId: null
+                projectId: null,
             });
         } catch (error) {
             console.error("Error updating project:", error);
-            alert("Unable to update project.");
+            alert(error.message || "Unable to update project.");
         }
     }
 
@@ -149,7 +179,7 @@ function Projects() {
             setConfirmation({
                 isOpen: false,
                 type: null,
-                projectId: null
+                projectId: null,
             });
         } catch (error) {
             console.error("Error deleting project:", error);
@@ -160,6 +190,7 @@ function Projects() {
     function resetForm() {
         setTitle("");
         setClient("");
+        setClientId("");
         setStatus("Active");
         setBudget("");
     }
@@ -180,7 +211,7 @@ function Projects() {
         setConfirmation({
             isOpen: true,
             type: "delete",
-            projectId
+            projectId,
         });
     }
 
@@ -189,7 +220,7 @@ function Projects() {
             setConfirmation({
                 isOpen: true,
                 type: "update",
-                projectId: editingProject.id
+                projectId: editingProject.id,
             });
 
             return;
@@ -198,7 +229,7 @@ function Projects() {
         setConfirmation({
             isOpen: true,
             type: "add",
-            projectId: null
+            projectId: null,
         });
     }
 
@@ -210,7 +241,22 @@ function Projects() {
         setEditingProject(project);
 
         setTitle(project.title || "");
-        setClient(project.client || "");
+
+        const existingClientId =
+            project.client_id ??
+            project.client_obj_id ??
+            project.client_obj?.id ??
+            "";
+
+        setClientId(existingClientId);
+
+        setClient(
+            project.client ||
+            project.client_name ||
+            project.clientName ||
+            ""
+        );
+
         setStatus(project.status || "Active");
         setBudget(project.budget ?? "");
 
@@ -287,6 +333,10 @@ function Projects() {
 
                         client={client}
                         setClient={setClient}
+
+                        clientId={clientId}
+                        setClientId={handleClientChange}
+                        clients={clients}
 
                         status={status}
                         setStatus={setStatus}
@@ -379,7 +429,7 @@ function Projects() {
                     setConfirmation({
                         isOpen: false,
                         type: null,
-                        projectId: null
+                        projectId: null,
                     })
                 }
                 onConfirm={

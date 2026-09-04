@@ -9,7 +9,7 @@ import "./Dashboard.css";
 import {
   getProjectActivity,
   getProjects,
-  getUsers,
+  getVendors,
 } from "../services/api/projectApi";
 
 import { getSurveys } from "../services/api/surveyApi";
@@ -137,13 +137,13 @@ function Dashboard() {
         // =========================
         // USERS / VENDORS
         // =========================
-        const usersData = await getUsers();
+        const vendorsData = await getVendors();
 
-        const safeUsers = Array.isArray(usersData)
-          ? usersData
+        const safeVendors = Array.isArray(vendorsData)
+          ? vendorsData
           : [];
 
-        setUserCount(safeUsers.length);
+        setUserCount(safeVendors.length);
 
         // =========================
         // RECENT ACTIVITY

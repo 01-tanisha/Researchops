@@ -1,0 +1,68 @@
+.settings-page {
+    padding: 30px;
+}
+
+.settings-header {
+    margin-bottom: 30px;
+}
+
+.settings-header h1 {
+    margin-bottom: 8px;
+    color: #1B2944;
+}
+
+.settings-header p {
+    margin: 0;
+    color: #7A8AA5;
+}
+
+.settings-card {
+    max-width: 700px;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.settings-card h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: #1B2944;
+}
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid #e8ebf0;
+}
+
+.profile-row:last-child {
+    border-bottom: none;
+}
+
+.profile-row span {
+    color: #7A8AA5;
+}
+
+.profile-row strong {
+    color: #1B2944;
+}
+
+.account-active {
+    color: #198754 !important;
+}
+
+.settings-message {
+    color: #7A8AA5;
+}
+
+.settings-error {
+    color: #dc3545;
+}

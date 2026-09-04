@@ -1,37 +1,105 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
 function Login() {
-  return (
+    const navigate = useNavigate();
 
-    <div className="login-page">
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-      <div className="login-card">
+    async function handleLogin(e) {
+        e.preventDefault();
 
-        <h2>Welcome Back</h2>
+        setError("");
+        setLoading(true);
 
-        <p>Login to ResearchOps AI</p>
+        try {
+            const response = await fetch(
+                "/api/login/",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        username,
+                        password,
+                    }),
+                }
+            );
 
-        <input
-          type="email"
-          placeholder="Email Address"
-        />
+            const data = await response.json();
 
-        <input
-          type="password"
-          placeholder="Password"
-        />
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Invalid username or password."
+                );
+            }
 
-        <button>
+            navigate("/dashboard");
+        } catch (error) {
+            console.error("Login failed:", error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }
 
-          Login
+    return (
+        <div className="login-page">
+            <div className="login-card">
+                <h1>ResearchOps</h1>
+                <p className="login-subtitle">
+                    Sign in to your account
+                </p>
 
-        </button>
+                <form onSubmit={handleLogin}>
+                    <div className="login-field">
+                        <label>Username</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) =>
+                                setUsername(e.target.value)
+                            }
+                            placeholder="Enter username"
+                            required
+                        />
+                    </div>
 
-      </div>
+                    <div className="login-field">
+                        <label>Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) =>
+                                setPassword(e.target.value)
+                            }
+                            placeholder="Enter password"
+                            required
+                        />
+                    </div>
 
-    </div>
+                    {error && (
+                        <p className="login-error">
+                            {error}
+                        </p>
+                    )}
 
-  );
+                    <button
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? "Signing in..." : "Login"}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
 }
 
 export default Login;

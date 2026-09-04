@@ -1,0 +1,175 @@
+.clients-page {
+    padding: 30px;
+}
+
+.clients-title {
+    margin-bottom: 25px;
+}
+
+.client-form-card,
+.clients-list-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.client-form-card h2,
+.clients-list-card h2 {
+    margin-top: 0;
+}
+
+.client-error {
+    color: #c62828;
+    background: #ffebee;
+    padding: 10px 14px;
+    border-radius: 6px;
+}
+
+.client-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.client-form-grid label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 600;
+}
+
+.client-form-grid input,
+.client-form-grid select,
+.client-form-grid textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #d5dbe3;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+.client-form-grid textarea {
+    resize: vertical;
+}
+
+.client-notes-field {
+    grid-column: span 2;
+}
+
+.client-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.client-form-actions button,
+.client-actions button {
+    border: none;
+    border-radius: 6px;
+    padding: 9px 15px;
+    cursor: pointer;
+}
+
+.client-form-actions button {
+    background: #1b2944;
+    color: white;
+}
+
+.client-form-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.client-cancel-button {
+    background: #e5e7eb !important;
+    color: #222 !important;
+}
+
+.clients-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.clients-list-header span {
+    font-weight: 600;
+}
+
+.clients-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.clients-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.clients-table th,
+.clients-table td {
+    padding: 13px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.clients-table th {
+    background: #f7f8fa;
+}
+
+.client-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.client-status.active {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.client-status.inactive {
+    background: #eeeeee;
+    color: #616161;
+}
+
+.client-actions {
+    display: flex;
+    gap: 7px;
+}
+
+.client-actions button {
+    background: #1b2944;
+    color: white;
+}
+
+.client-actions .delete-button {
+    background: #c62828;
+}
+
+.clients-message {
+    padding: 20px 0;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .client-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .client-notes-field {
+        grid-column: span 1;
+    }
+
+    .clients-page {
+        padding: 20px;
+    }
+
+    .clients-table {
+        min-width: 750px;
+    }
+}

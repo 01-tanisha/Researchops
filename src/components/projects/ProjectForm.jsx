@@ -5,6 +5,9 @@ function ProjectForm({
     setTitle,
     client,
     setClient,
+    clientId,
+    setClientId,
+    clients = [],
     status,
     setStatus,
     budget,
@@ -28,12 +31,20 @@ function ProjectForm({
 
             <div>
                 <label>Client Name</label>
-                <input
-                    type="text"
-                    placeholder="Enter Client Name"
-                    value={client}
-                    onChange={(e) => setClient(e.target.value)}
-                />
+                <select
+                    value={clientId}
+                    onChange={(e) => setClientId(e.target.value)}
+                >
+                    <option value="">
+                        Select Client
+                    </option>
+
+                    {clients.map((item) => (
+                        <option key={item.id} value={item.id}>
+                            {item.company || item.name}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             <div>

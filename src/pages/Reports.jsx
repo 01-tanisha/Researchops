@@ -17,7 +17,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 
 import {
     getProjects,
-    getUsers,
+    getVendors,
 } from "../services/api/projectApi";
 
 import {
@@ -59,7 +59,7 @@ function Reports() {
                 ] = await Promise.all([
                     getProjects(),
                     getSurveys(),
-                    getUsers(),
+                    getVendors(),
                 ]);
 
                 const safeProjects = Array.isArray(projectsData)

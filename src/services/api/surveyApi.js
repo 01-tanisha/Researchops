@@ -1,5 +1,5 @@
-const SURVEY_API_URL = "http://127.0.0.1:8000/api/surveys/";
-const API_BASE = "http://127.0.0.1:8000";
+const SURVEY_API_URL = "/api/surveys/";
+const API_BASE = "";
 
 export async function getSurveys() {
 
@@ -334,3 +334,46 @@ export const getSurveyAnalytics = async (surveyId) => {
 
     return data;
 };
+
+export async function getSurveyBilling(surveyId) {
+    const response = await fetch(
+        `/api/surveys/${surveyId}/billing/`,
+        {
+            credentials: "include",
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.error || "Failed to fetch survey billing."
+        );
+    }
+
+    return data;
+}
+
+export async function updateSurveyStatus(surveyId, status) {
+    const response = await fetch(
+        `/api/surveys/${surveyId}/status/`,
+        {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status }),
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.error || "Failed to update survey status."
+        );
+    }
+
+    return data;
+}

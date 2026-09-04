@@ -1,4 +1,4 @@
-const USERS_API_URL = "http://127.0.0.1:8000/api";
+const USERS_API_URL = "/api";
 
 export async function getUsers() {
   const response = await fetch(`${USERS_API_URL}/users/`);
