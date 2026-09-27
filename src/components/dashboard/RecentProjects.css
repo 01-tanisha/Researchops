@@ -1,13 +1,17 @@
 .recent-projects {
-    margin-top: 40px;
+    min-width: 0;
+    margin-top: 0;
     background: white;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
+    border: 1px solid #e1e6ee;
+    border-radius: 7px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgb(27 41 68 / 5%);
 }
 
 .recent-projects h2 {
     margin: 0;
+    color: #1b2944;
+    font-size: 16px;
 }
 
 .recent-projects-empty {
@@ -18,41 +22,66 @@
 .recent-projects table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 12px;
 }
 
 .recent-projects th,
 .recent-projects td {
-    padding: 16px 18px;
+    padding: 11px 12px;
     text-align: left;
+    font-size: 12px;
 }
 
 .recent-projects th {
-    background: #1B2944;
+    background: #f4f6f9;
     color: white;
-    font-weight: 600;
+    color: #1b2944;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
 }
 
 .recent-projects tbody tr:nth-child(even) {
-    background: #f9fafc;
+    background: #fafbfd;
 }
 
 .recent-projects tbody tr:hover {
-    background: #eef4ff;
+    background: #f4f6f9;
 }
 
-.recent-projects td:nth-child(3) {
-    font-weight: 600;
-    white-space: nowrap;
+.recent-projects td:first-child {
+    color: #1b2944;
+    font-weight: 700;
+}
+
+.recent-project-status {
+    display: inline-block;
+    padding: 4px 7px;
+    border-radius: 4px;
+    background: #e9edf3;
+    color: #40536f;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.recent-project-status.active {
+    background: #fff2d5;
+    color: #78540b;
+}
+
+.recent-project-status.completed,
+.recent-project-status.billed {
+    background: #e7edf5;
+    color: #435875;
 }
 
 @media (max-width: 768px) {
     .recent-projects {
-        padding: 18px;
+        padding: 15px;
         overflow-x: auto;
     }
 
     .recent-projects table {
-        min-width: 650px;
+        min-width: 480px;
     }
 }

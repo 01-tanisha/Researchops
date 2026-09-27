@@ -8,7 +8,7 @@
     box-sizing: border-box;
 
     background: #1B2944;
-    padding: 30px;
+    padding: 30px 18px 16px;
 
     z-index: 500;
 
@@ -26,7 +26,7 @@
 .sidebar nav {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 5px;
 }
 
 .sidebar a {
@@ -34,9 +34,9 @@
     align-items: center;
     gap: 12px;
 
-    padding: 14px 18px;
+    padding: 11px 13px;
 
-    border-radius: 10px;
+    border-radius: 6px;
 
     color: white;
     text-decoration: none;
@@ -55,38 +55,112 @@
     font-size: 12px;
     letter-spacing: 2px;
 
-    margin-top: 30px;
-    margin-bottom: 12px;
+    margin-top: 23px;
+    margin-bottom: 8px;
 
     text-transform: uppercase;
 }
 
-/* LOGOUT */
-
-.sidebar-logout {
+.sidebar-account {
+    position: relative;
     margin-top: auto;
-    padding-top: 30px;
+    padding-top: 12px;
+    border-top: 1px solid rgb(255 255 255 / 14%);
 }
 
-.sidebar-logout button {
+.sidebar-account-trigger {
     width: 100%;
-
-    padding: 12px 15px;
-
-    border: none;
-    border-radius: 10px;
-
-    background: #dc3545;
-    color: white;
-
-    font-size: 14px;
-    font-weight: 600;
-
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    text-align: left;
     cursor: pointer;
-
-    transition: 0.3s;
 }
 
-.sidebar-logout button:hover {
-    background: #c82333;
+.sidebar-account-trigger:hover,
+.sidebar-account-trigger[aria-expanded="true"] {
+    background: #2d4368;
+}
+
+.sidebar-account-avatar {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f9b233;
+    color: #1b2944;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.sidebar-account-name {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-chevron {
+    flex: 0 0 auto;
+    color: #b8c4d6;
+    font-size: 11px;
+    transition: transform 150ms ease;
+}
+
+.account-chevron.open {
+    transform: rotate(180deg);
+}
+
+.sidebar-account-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    left: 0;
+    z-index: 600;
+    overflow: hidden;
+    padding: 5px;
+    border: 1px solid rgb(255 255 255 / 13%);
+    border-radius: 6px;
+    background: #243856;
+    box-shadow: 0 8px 22px rgb(0 0 0 / 22%);
+}
+
+.sidebar .sidebar-account-menu a,
+.sidebar-account-menu button {
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #f4f6fa;
+    font: inherit;
+    font-size: 12px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sidebar .sidebar-account-menu a:hover,
+.sidebar-account-menu button:hover {
+    background: #365176;
+    color: #f9b233;
+}
+
+.sidebar-account-menu svg {
+    width: 14px;
 }

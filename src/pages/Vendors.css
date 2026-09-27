@@ -1,13 +1,28 @@
 .vendors-page {
     width: 100%;
     box-sizing: border-box;
+    padding-top: 20px;
 }
 
 .vendors-title {
-    margin: 0 0 25px;
-    font-size: 36px;
+    margin: 0;
+    font-size: 34px;
     font-weight: 700;
-    color: #111827;
+    color: #1b2944;
+}
+
+.vendors-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.vendors-subtitle {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 13px;
 }
 
 .vendor-form-card,
@@ -97,6 +112,40 @@
     font-size: 14px;
 }
 
+.directory-list-tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.directory-search input {
+    width: min(280px, 34vw);
+    min-height: 38px;
+    padding: 8px 11px;
+    border: 1px solid #d8dee9;
+    border-radius: 6px;
+    background: #fff;
+    color: #1b2944;
+    font: inherit;
+    font-size: 13px;
+}
+
+.directory-search input:focus {
+    border-color: #1b2944;
+    outline: 3px solid rgb(27 41 68 / 12%);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .vendors-table-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -146,5 +195,51 @@
 
     .vendors-table {
         min-width: 700px;
+    }
+
+    .vendors-list-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .directory-list-tools {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .directory-search {
+        flex: 1;
+    }
+
+    .directory-search input {
+        width: 100%;
+    }
+}
+
+.vendor-add-button {
+    min-height: 42px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 6px;
+    background: #f9b233;
+    color: #1b2944;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.vendor-add-button:hover {
+    background: #e9a11b;
+}
+
+@media (max-width: 768px) {
+    .vendors-title {
+        font-size: 30px;
+    }
+
+    .vendors-page-header {
+        align-items: center;
     }
 }

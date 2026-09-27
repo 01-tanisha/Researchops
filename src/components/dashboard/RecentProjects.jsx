@@ -17,7 +17,6 @@ function RecentProjects({ projects = [] }) {
             <tr>
               <th>Project</th>
               <th>Client</th>
-              <th>Budget</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -26,11 +25,8 @@ function RecentProjects({ projects = [] }) {
             {recentProjects.map((project) => (
               <tr key={project.id}>
                 <td>{project.title}</td>
-                <td>{project.client}</td>
-                <td>
-                  ₹{Number(project.budget ?? 0).toLocaleString("en-IN")}
-                </td>
-                <td>{project.status}</td>
+                <td>{project.client_name || project.client || "—"}</td>
+                <td><span className={`recent-project-status ${String(project.status || "").toLowerCase()}`}>{project.status || "—"}</span></td>
               </tr>
             ))}
           </tbody>

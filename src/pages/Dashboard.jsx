@@ -7,6 +7,8 @@ import Users from "../components/dashboard/Users";
 import "./Dashboard.css";
 
 import {
+  getClients,
+  getDashboardProjectManagers,
   getProjectActivity,
   getProjects,
   getVendors,
@@ -20,10 +22,10 @@ function Dashboard() {
 
   const [projectCount, setProjectCount] = useState(0);
   const [surveyCount, setSurveyCount] = useState(0);
-  const [userCount, setUserCount] = useState(0);
-  const [revenue, setRevenue] = useState(0);
+  const [vendorCount, setVendorCount] = useState(0);
+  const [clientCount, setClientCount] = useState(0);
+  const [projectManagers, setProjectManagers] = useState([]);
 
-  // Project status counts
   const [projectStatusCounts, setProjectStatusCounts] = useState({
     Active: 0,
     Completed: 0,
@@ -32,7 +34,6 @@ function Dashboard() {
     Draft: 0,
   });
 
-  // Survey status counts
   const [surveyStatusCounts, setSurveyStatusCounts] = useState({
     Active: 0,
     Paused: 0,
@@ -53,6 +54,7 @@ function Dashboard() {
         // =========================
         // PROJECTS
         // =========================
+
         const projectsData = await getProjects();
 
         const safeProjects = Array.isArray(projectsData)
@@ -62,7 +64,6 @@ function Dashboard() {
         setProjects(safeProjects);
         setProjectCount(safeProjects.length);
 
-        // Project status counts
         const projectStatusData = {
           Active: safeProjects.filter(
             (project) => project.status === "Active"
@@ -88,19 +89,9 @@ function Dashboard() {
         setProjectStatusCounts(projectStatusData);
 
         // =========================
-        // TOTAL PROJECT BUDGET
-        // =========================
-        const totalBudget = safeProjects.reduce(
-          (total, project) =>
-            total + Number(project.budget || 0),
-          0
-        );
-
-        setRevenue(totalBudget);
-
-        // =========================
         // SURVEYS
         // =========================
+
         const surveysData = await getSurveys();
 
         const safeSurveys = Array.isArray(surveysData)
@@ -109,7 +100,6 @@ function Dashboard() {
 
         setSurveyCount(safeSurveys.length);
 
-        // Survey status counts
         const surveyStatusData = {
           Active: safeSurveys.filter(
             (survey) => survey.status === "Active"
@@ -130,24 +120,36 @@ function Dashboard() {
           Draft: safeSurveys.filter(
             (survey) => survey.status === "Draft"
           ).length,
+
         };
 
         setSurveyStatusCounts(surveyStatusData);
 
         // =========================
-        // USERS / VENDORS
+        // VENDORS
         // =========================
+
         const vendorsData = await getVendors();
 
         const safeVendors = Array.isArray(vendorsData)
           ? vendorsData
           : [];
 
-        setUserCount(safeVendors.length);
+        setVendorCount(safeVendors.length);
+
+        const [clientsData, projectManagersData] = await Promise.all([
+          getClients(),
+          getDashboardProjectManagers(),
+        ]);
+        setClientCount(Array.isArray(clientsData) ? clientsData.length : 0);
+        setProjectManagers(
+          Array.isArray(projectManagersData) ? projectManagersData : []
+        );
 
         // =========================
         // RECENT ACTIVITY
         // =========================
+
         const activityData = await getProjectActivity();
 
         const safeActivities = Array.isArray(activityData)
@@ -156,10 +158,10 @@ function Dashboard() {
 
         setActivities(safeActivities);
 
-      } catch (error) {
+      } catch (err) {
         console.error(
           "Failed to load dashboard data:",
-          error
+          err
         );
 
         setError(
@@ -169,8 +171,9 @@ function Dashboard() {
         setProjects([]);
         setProjectCount(0);
         setSurveyCount(0);
-        setUserCount(0);
-        setRevenue(0);
+        setVendorCount(0);
+        setClientCount(0);
+        setProjectManagers([]);
         setActivities([]);
 
         setProjectStatusCounts({
@@ -188,7 +191,6 @@ function Dashboard() {
           Billed: 0,
           Draft: 0,
         });
-
       } finally {
         setLoading(false);
       }
@@ -201,27 +203,24 @@ function Dashboard() {
     <DashboardLayout>
       <div className="dashboard-content">
 
-        {/* =========================
-            LOADING
-        ========================= */}
+        {/* LOADING */}
+
         {loading && (
           <p className="dashboard-loading">
             Loading dashboard...
           </p>
         )}
 
-        {/* =========================
-            ERROR
-        ========================= */}
+        {/* ERROR */}
+
         {error && (
           <p className="dashboard-error">
             {error}
           </p>
         )}
 
-        {/* =========================
-            OVERVIEW
-        ========================= */}
+        {/* OVERVIEW */}
+
         <div className="dashboard-overview-shell">
 
           <h1 className="dashboard-title">
@@ -238,7 +237,7 @@ function Dashboard() {
 
             <StatCard
               title="Vendors"
-              value={userCount}
+              value={vendorCount}
               color="#2196F3"
             />
 
@@ -249,20 +248,20 @@ function Dashboard() {
             />
 
             <StatCard
-              title="Total Budget"
-              value={`₹${revenue.toLocaleString("en-IN")}`}
-              color="#9C27B0"
+              title="Clients"
+              value={clientCount}
+              color="#F9B233"
             />
 
           </div>
         </div>
 
-        {/* =========================
-            STATUS OVERVIEW
-        ========================= */}
+        {/* STATUS OVERVIEW */}
+
         <div className="status-overview">
 
           {/* PROJECT STATUS */}
+
           <div className="status-section">
 
             <h2>Project Status</h2>
@@ -273,56 +272,42 @@ function Dashboard() {
                 <strong>
                   {projectStatusCounts.Active}
                 </strong>
-
-                <span>
-                  Active
-                </span>
+                <span>Active</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {projectStatusCounts.Paused}
                 </strong>
-
-                <span>
-                  Paused
-                </span>
+                <span>Paused</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {projectStatusCounts.Completed}
                 </strong>
-
-                <span>
-                  Completed
-                </span>
+                <span>Completed</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {projectStatusCounts.Billed}
                 </strong>
-
-                <span>
-                  Billed
-                </span>
+                <span>Billed</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {projectStatusCounts.Draft}
                 </strong>
-
-                <span>
-                  Draft
-                </span>
+                <span>Draft</span>
               </div>
 
             </div>
           </div>
 
           {/* SURVEY STATUS */}
+
           <div className="status-section">
 
             <h2>Survey Status</h2>
@@ -333,50 +318,35 @@ function Dashboard() {
                 <strong>
                   {surveyStatusCounts.Active}
                 </strong>
-
-                <span>
-                  Active
-                </span>
+                <span>Active</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {surveyStatusCounts.Paused}
                 </strong>
-
-                <span>
-                  Paused
-                </span>
+                <span>Paused</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {surveyStatusCounts.Completed}
                 </strong>
-
-                <span>
-                  Completed
-                </span>
+                <span>Completed</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {surveyStatusCounts.Billed}
                 </strong>
-
-                <span>
-                  Billed
-                </span>
+                <span>Billed</span>
               </div>
 
               <div className="status-item">
                 <strong>
                   {surveyStatusCounts.Draft}
                 </strong>
-
-                <span>
-                  Draft
-                </span>
+                <span>Draft</span>
               </div>
 
             </div>
@@ -384,9 +354,8 @@ function Dashboard() {
 
         </div>
 
-        {/* =========================
-            DASHBOARD PANELS
-        ========================= */}
+        {/* DASHBOARD PANELS */}
+
         <div className="dashboard-panels">
 
           <RecentProjects
@@ -399,7 +368,7 @@ function Dashboard() {
             error={error}
           />
 
-          <Users />
+          <Users managers={projectManagers} loading={loading} />
 
         </div>
 

@@ -1,60 +1,102 @@
-.users{
-
-    margin-top:35px;
-
-    background:white;
-
-    padding:25px;
-
-    border-radius:12px;
-
-    box-shadow:0 3px 10px rgba(0,0,0,.08);
-
+.users-panel {
+    background: #ffffff;
+    border: 1px solid #e1e6ee;
+    border-radius: 7px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgb(27 41 68 / 5%);
 }
 
-.users h2{
-
-    margin-bottom:20px;
-
+.manager-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 11px;
 }
 
-.user-card{
-
-    padding:15px 0;
-
+.manager-panel-heading h2 {
+    margin: 0;
+    color: #1b2944;
+    font-size: 16px;
 }
 
-.user-card:last-child{
-
-    border:none;
-
+.manager-panel-heading > span {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
 }
 
-.user-name{
-
-    font-weight:600;
-
+.manager-summary-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
 }
 
-.user-email{
-
-    color:#777;
-
-    font-size:14px;
-
+.manager-summary-list li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 9px 0;
+    border-bottom: 1px solid #edf0f4;
 }
 
-.users-message {
-    font-size: 14px;
-    color: #666;
-    margin: 12px 0;
+.manager-summary-list li:last-child {
+    border-bottom: 0;
 }
 
-.users-error {
-    font-size: 14px;
-    color: #c62828;
-    background: #fdecec;
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin: 12px 0;
+.manager-summary-avatar {
+    flex: 0 0 29px;
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fff2d5;
+    color: #1b2944;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.manager-summary-name {
+    min-width: 0;
+    flex: 1;
+}
+
+.manager-summary-name strong,
+.manager-summary-name small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.manager-summary-name strong {
+    color: #26364f;
+    font-size: 11px;
+}
+
+.manager-summary-name small {
+    margin-top: 3px;
+    color: #78869a;
+    font-size: 9px;
+}
+
+.manager-summary-state {
+    padding: 4px 6px;
+    border-radius: 4px;
+    background: #e7edf5;
+    color: #435875;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.manager-summary-state.active {
+    background: #fff2d5;
+    color: #78540b;
+}
+
+.manager-panel-empty {
+    margin: 12px 0 2px;
+    color: #64748b;
+    font-size: 12px;
 }

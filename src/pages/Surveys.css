@@ -699,3 +699,137 @@
     }
 
 }
+
+.surveys-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #d8dee9;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.surveys-table {
+    width: 100%;
+    min-width: 1320px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.surveys-table th,
+.surveys-table td {
+    padding: 12px 11px;
+    border-bottom: 1px solid #e7ebf1;
+    color: #334155;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.surveys-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f4f6f9;
+    color: #1b2944;
+    font-size: 10px;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.surveys-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.surveys-table tbody tr:hover {
+    background: #fafbfd;
+}
+
+.surveys-table .survey-table-title {
+    max-width: 220px;
+    overflow: hidden;
+    color: #1b2944;
+    font-weight: 700;
+    text-overflow: ellipsis;
+}
+
+.survey-table-status {
+    display: inline-block;
+    padding: 4px 7px;
+    border-radius: 4px;
+    background: #e8edf4;
+    color: #354b6a;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.survey-table-status.active,
+.survey-table-status.quota-full {
+    background: #fff2d5;
+    color: #78540b;
+}
+
+.survey-table-status.completed,
+.survey-table-status.billed {
+    background: #e7edf5;
+    color: #435875;
+}
+
+.survey-table-status.paused,
+.survey-table-status.draft {
+    background: #eef0f3;
+    color: #657184;
+}
+
+.survey-row-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.survey-row-actions button {
+    min-height: 29px;
+    padding: 0 8px;
+    border: 1px solid #d8dee9;
+    border-radius: 4px;
+    background: #fff;
+    color: #1b2944;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.survey-row-actions button:hover {
+    background: #eef2f7;
+}
+
+.survey-row-actions button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.survey-row-actions .survey-row-delete {
+    border-color: #efc9c9;
+    color: #a33c3c;
+}
+
+.survey-row-actions .survey-row-delete:hover {
+    background: #fff0f0;
+}
+
+.survey-table-edit-row input,
+.survey-table-edit-row select {
+    min-height: 32px;
+    max-width: 180px;
+    padding: 5px 7px;
+    border: 1px solid #d8dee9;
+    border-radius: 4px;
+    color: #1b2944;
+    font: inherit;
+    font-size: 11px;
+}
+
+.survey-row-error {
+    display: block;
+    max-width: 190px;
+    margin-top: 4px;
+    color: #b42318;
+    white-space: normal;
+}

@@ -1,55 +1,31 @@
 import "./Stats.css";
 
 function Stats() {
-
-    const stats = [
-
-        {
-            number:"5000+",
-            label:"Surveys Completed"
-        },
-
-        {
-            number:"250+",
-            label:"Vendors"
-        },
-
-        {
-            number:"100+",
-            label:"Clients"
-        },
-
-        {
-            number:"98%",
-            label:"Success Rate"
-        }
-
-    ];
-
     return(
-
-        <section className="stats">
-
-            <div className="stats-container">
-
-                {stats.map((item,index)=>(
-
-                    <div className="stat-card" key={index}>
-
-                        <h2>{item.number}</h2>
-
-                        <p>{item.label}</p>
-
-                    </div>
-
-                ))}
-
+        <section className="stats" id="workflow">
+            <div className="workflow-heading">
+                <p>A PRACTICAL FLOW</p>
+                <h2>From brief to fieldwork, without the gaps.</h2>
             </div>
-
+            <div className="stats-container">
+                <article className="stat-card">
+                    <span>STEP 01</span>
+                    <h3>Set the brief</h3>
+                    <p>Start with a project, its client, and the survey requirements.</p>
+                </article>
+                <article className="stat-card">
+                    <span>STEP 02</span>
+                    <h3>Run the field</h3>
+                    <p>Allocate vendors and keep completes and survey metrics in view.</p>
+                </article>
+                <article className="stat-card">
+                    <span>STEP 03</span>
+                    <h3>Close the loop</h3>
+                    <p>Review delivery and reporting before the work is marked complete.</p>
+                </article>
+            </div>
         </section>
-
     );
-
 }
 
 export default Stats;

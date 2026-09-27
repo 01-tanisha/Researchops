@@ -3,15 +3,14 @@ import "../../pages/Projects.css";
 function ProjectForm({
     title,
     setTitle,
-    client,
-    setClient,
     clientId,
     setClientId,
     clients = [],
+    projectManagerId,
+    setProjectManagerId,
+    projectManagers = [],
     status,
     setStatus,
-    budget,
-    setBudget,
     onSave,
     onCancel,
     buttonLabel = "Add Project",
@@ -48,15 +47,18 @@ function ProjectForm({
             </div>
 
             <div>
-                <label>Budget</label>
-                <input
-                    type="number"
-                    placeholder="Enter Project Budget"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                    min="0"
-                    step="0.01"
-                />
+                <label>Project Manager</label>
+                <select
+                    value={projectManagerId}
+                    onChange={(event) => setProjectManagerId(event.target.value)}
+                >
+                    <option value="">Unassigned</option>
+                    {projectManagers.map((manager) => (
+                        <option key={manager.id} value={manager.id}>
+                            {manager.name}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             <div>
@@ -70,6 +72,7 @@ function ProjectForm({
                     <option value="Paused">Paused</option>
                     <option value="Draft">Draft</option>
                     <option value="Billed">Billed</option>
+                    <option value="Cancelled">Cancelled</option>
                 </select>
             </div>
 

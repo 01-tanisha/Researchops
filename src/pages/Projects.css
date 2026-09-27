@@ -16,11 +16,144 @@
     color:#1B2944;
 }
 
+.projects-header-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.project-status-filter{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#64748b;
+    font-size:12px;
+    font-weight:650;
+}
+
+.project-status-filter select{
+    min-height:42px;
+    min-width:145px;
+    padding:0 30px 0 11px;
+    border:1px solid #d8dee9;
+    border-radius:6px;
+    background:#fff;
+    color:#1b2944;
+    font:inherit;
+    cursor:pointer;
+}
+
 .projects-grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
     gap:25px;
     margin-top:30px;
+}
+
+.projects-table-wrap{
+    width:100%;
+    margin-top:24px;
+    overflow-x:auto;
+    background:#fff;
+    border:1px solid #d8dee9;
+    border-radius:10px;
+}
+
+.projects-table{
+    width:100%;
+    min-width:1120px;
+    border-collapse:collapse;
+    text-align:left;
+}
+
+.projects-table th,
+.projects-table td{
+    padding:14px 12px;
+    border-bottom:1px solid #e7ebf1;
+    color:#334155;
+    font-size:13px;
+    white-space:nowrap;
+}
+
+.projects-table th{
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:#f4f6f9;
+    color:#1b2944;
+    font-size:12px;
+    font-weight:700;
+}
+
+.projects-table tbody tr:last-child td{
+    border-bottom:0;
+}
+
+.projects-table tbody tr:hover{
+    background:#f8fafc;
+}
+
+.projects-table .project-name-cell{
+    color:#1b2944;
+    font-weight:700;
+}
+
+.project-row-actions{
+    display:flex;
+    gap:6px;
+}
+
+.project-row-actions button{
+    padding:6px 8px;
+    border:1px solid #d8dee9;
+    border-radius:5px;
+    background:#fff;
+    color:#1b2944;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.project-row-actions button:hover{
+    background:#eef2f7;
+}
+
+.projects-table .status{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:999px;
+    background:#e8eef7;
+    color:#1b2944;
+    font-size:11px;
+    font-weight:700;
+}
+
+@media (max-width: 640px){
+    .dashboard-content{
+        padding:20px 14px;
+    }
+
+    .projects-header h1{
+        font-size:28px;
+    }
+
+    .projects-header{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .projects-header-actions{
+        width:100%;
+        justify-content:space-between;
+    }
+
+    .project-status-filter{
+        min-width:0;
+    }
+
+    .project-status-filter select{
+        min-width:130px;
+    }
 }
 
 .add-project{

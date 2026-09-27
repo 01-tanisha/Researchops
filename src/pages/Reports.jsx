@@ -23,16 +23,20 @@ import {
 import {
     getSurveys,
     getSurveyAnalytics,
+    getSurveyBilling,
 } from "../services/api/surveyApi";
 
 import "./Reports.css";
 
-
 function Reports() {
     const [projects, setProjects] = useState([]);
     const [surveys, setSurveys] = useState([]);
-    const [users, setUsers] = useState([]);
+    const [vendors, setVendors] = useState([]);
     const [surveyAnalytics, setSurveyAnalytics] = useState([]);
+    const [surveyBilling, setSurveyBilling] = useState([]);
+
+    const [selectedSurvey, setSelectedSurvey] = useState("All");
+    const [selectedStatus, setSelectedStatus] = useState("All");
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -45,6 +49,9 @@ function Reports() {
         "#EF4444",
     ];
 
+    // =========================
+    // LOAD REPORT DATA
+    // =========================
 
     useEffect(() => {
         async function loadReports() {
@@ -55,7 +62,7 @@ function Reports() {
                 const [
                     projectsData,
                     surveysData,
-                    usersData,
+                    vendorsData,
                 ] = await Promise.all([
                     getProjects(),
                     getSurveys(),
@@ -70,13 +77,13 @@ function Reports() {
                     ? surveysData
                     : [];
 
-                const safeUsers = Array.isArray(usersData)
-                    ? usersData
+                const safeVendors = Array.isArray(vendorsData)
+                    ? vendorsData
                     : [];
 
                 setProjects(safeProjects);
                 setSurveys(safeSurveys);
-                setUsers(safeUsers);
+                setVendors(safeVendors);
 
                 const analyticsResults = await Promise.allSettled(
                     safeSurveys.map((survey) =>
@@ -86,10 +93,27 @@ function Reports() {
 
                 setSurveyAnalytics(
                     analyticsResults
-                        .filter((result) => result.status === "fulfilled")
+                        .filter(
+                            (result) =>
+                                result.status === "fulfilled"
+                        )
                         .map((result) => result.value)
                 );
 
+                const billingResults = await Promise.allSettled(
+                    safeSurveys.map((survey) =>
+                        getSurveyBilling(survey.id)
+                    )
+                );
+
+                setSurveyBilling(
+                    billingResults
+                        .filter(
+                            (result) =>
+                                result.status === "fulfilled"
+                        )
+                        .map((result) => result.value)
+                );
             } catch (error) {
                 console.error(
                     "Failed to load reports:",
@@ -99,7 +123,6 @@ function Reports() {
                 setError(
                     "Unable to load report data. Please try again."
                 );
-
             } finally {
                 setLoading(false);
             }
@@ -107,7 +130,6 @@ function Reports() {
 
         loadReports();
     }, []);
-
 
     // =========================
     // PROJECT STATUS
@@ -133,7 +155,6 @@ function Reports() {
         (project) => project.status === "Draft"
     ).length;
 
-
     // =========================
     // SURVEY STATUS
     // =========================
@@ -158,9 +179,8 @@ function Reports() {
         (survey) => survey.status === "Draft"
     ).length;
 
-
     // =========================
-    // TOTAL BUDGET
+    // PROJECT BUDGET
     // =========================
 
     const totalBudget = projects.reduce(
@@ -169,6 +189,110 @@ function Reports() {
         0
     );
 
+    // =========================
+    // FILTERED SURVEYS
+    // =========================
+
+    const filteredSurveys = surveys.filter((survey) => {
+        const surveyMatch =
+            selectedSurvey === "All" ||
+            String(survey.id) === String(selectedSurvey);
+
+        const statusMatch =
+            selectedStatus === "All" ||
+            survey.status === selectedStatus;
+
+        return surveyMatch && statusMatch;
+    });
+
+    const filteredSurveyIds = new Set(
+        filteredSurveys.map((survey) => survey.id)
+    );
+
+    const filteredSurveyBilling =
+        surveyBilling.filter((billing) =>
+            filteredSurveyIds.has(billing.survey_id)
+        );
+
+    const filteredSurveyAnalytics =
+        surveyAnalytics.filter((analytics) =>
+            filteredSurveyIds.has(analytics.survey_id)
+        );
+
+    // =========================
+    // FILTERED FINANCIAL TOTALS
+    // =========================
+
+    const totalClientRevenue =
+        filteredSurveyBilling.reduce(
+            (total, billing) =>
+                total +
+                Number(billing.client_revenue || 0),
+            0
+        );
+
+    const totalVendorCost =
+        filteredSurveyBilling.reduce(
+            (total, billing) =>
+                total +
+                Number(billing.vendor_cost || 0),
+            0
+        );
+
+    const totalProfit =
+        filteredSurveyBilling.reduce(
+            (total, billing) =>
+                total +
+                Number(billing.profit || 0),
+            0
+        );
+
+    const totalValidCompletes =
+        filteredSurveyBilling.reduce(
+            (total, billing) =>
+                total +
+                Number(billing.valid_completes || 0),
+            0
+        );
+
+    // =========================
+    // VENDOR FINANCIAL ANALYSIS
+    // =========================
+
+    const vendorFinancialData = {};
+
+    filteredSurveyBilling.forEach((billing) => {
+        (billing.vendor_breakdown || []).forEach(
+            (vendor) => {
+                const vendorName =
+                    vendor.vendor_name ||
+                    "Unknown Vendor";
+
+                if (!vendorFinancialData[vendorName]) {
+                    vendorFinancialData[vendorName] = {
+                        vendor: vendorName,
+                        validCompletes: 0,
+                        vendorCost: 0,
+                    };
+                }
+
+                vendorFinancialData[
+                    vendorName
+                ].validCompletes += Number(
+                    vendor.valid_completes || 0
+                );
+
+                vendorFinancialData[
+                    vendorName
+                ].vendorCost += Number(
+                    vendor.vendor_cost || 0
+                );
+            }
+        );
+    });
+
+    const vendorFinancialChartData =
+        Object.values(vendorFinancialData);
 
     // =========================
     // CHART DATA
@@ -197,7 +321,6 @@ function Reports() {
         },
     ].filter((item) => item.value > 0);
 
-
     const surveyStatusData = [
         {
             name: "Active",
@@ -221,29 +344,222 @@ function Reports() {
         },
     ].filter((item) => item.value > 0);
 
+    const qualificationData =
+        filteredSurveyAnalytics.map(
+            (analytics) => {
+                const qualified = Number(
+                    analytics.qualified_respondents || 0
+                );
+                const participants = Number(
+                    analytics.total_respondents || 0
+                );
 
-    const qualificationData = surveyAnalytics.map(
-        (analytics) => ({
-            name: analytics.survey_title,
-            Qualified: Number(
-                analytics.qualified_responses || 0
-            ),
-            Disqualified: Number(
-                analytics.disqualified_responses || 0
-            ),
-        })
-    );
+                return {
+                    name: analytics.survey_title,
+                    Qualified: qualified,
+                    OtherParticipants: Math.max(participants - qualified, 0),
+                };
+            }
+        );
 
+    // =========================
+    // CSV EXPORT
+    // =========================
+
+    const exportReportCSV = () => {
+        const rows = [];
+
+        rows.push([
+            "Survey",
+            "Required Completes",
+            "Valid Completes",
+            "Completion %",
+            "Client Revenue",
+            "Vendor Cost",
+            "Profit",
+        ]);
+
+        filteredSurveyBilling.forEach((billing) => {
+            rows.push([
+                billing.survey_title || "",
+                billing.required_completes || 0,
+                billing.valid_completes || 0,
+                `${billing.completion_percentage || 0}%`,
+                billing.client_revenue || 0,
+                billing.vendor_cost || 0,
+                billing.profit || 0,
+            ]);
+        });
+
+        rows.push([]);
+
+        rows.push([
+            "Vendor",
+            "Valid Completes",
+            "Vendor Cost",
+        ]);
+
+        vendorFinancialChartData.forEach((vendor) => {
+            rows.push([
+                vendor.vendor || "",
+                vendor.validCompletes || 0,
+                vendor.vendorCost || 0,
+            ]);
+        });
+
+        const csvContent = rows
+            .map((row) =>
+                row
+                    .map(
+                        (value) =>
+                            `"${String(value).replace(
+                                /"/g,
+                                '""'
+                            )}"`
+                    )
+                    .join(",")
+            )
+            .join("\n");
+
+        const blob = new Blob(
+            [csvContent],
+            {
+                type: "text/csv;charset=utf-8;",
+            }
+        );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+        link.download =
+            "ResearchOps_Report.csv";
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+    };
+
+    // =========================
+    // RETURN
+    // =========================
 
     return (
         <DashboardLayout>
-
             <div className="reports-page">
 
                 <h1 className="reports-title">
                     Reports
                 </h1>
 
+                {/* REPORT FILTERS */}
+
+                <div className="reports-filters">
+
+                    <div className="report-filter">
+                        <label htmlFor="survey-filter">
+                            Survey
+                        </label>
+
+                        <select
+                            id="survey-filter"
+                            value={selectedSurvey}
+                            onChange={(e) =>
+                                setSelectedSurvey(
+                                    e.target.value
+                                )
+                            }
+                        >
+                            <option value="All">
+                                All Surveys
+                            </option>
+
+                            {surveys.map(
+                                (survey) => (
+                                    <option
+                                        key={survey.id}
+                                        value={survey.id}
+                                    >
+                                        {survey.title}
+                                    </option>
+                                )
+                            )}
+                        </select>
+                    </div>
+
+                    <div className="report-filter">
+                        <label htmlFor="status-filter">
+                            Status
+                        </label>
+
+                        <select
+                            id="status-filter"
+                            value={selectedStatus}
+                            onChange={(e) =>
+                                setSelectedStatus(
+                                    e.target.value
+                                )
+                            }
+                        >
+                            <option value="All">
+                                All Statuses
+                            </option>
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                            <option value="Paused">
+                                Paused
+                            </option>
+
+                            <option value="Billed">
+                                Billed
+                            </option>
+
+                            <option value="Draft">
+                                Draft
+                            </option>
+                        </select>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="clear-report-filters"
+                        onClick={() => {
+                            setSelectedSurvey("All");
+                            setSelectedStatus("All");
+                        }}
+                    >
+                        Clear Filters
+                    </button>
+
+                </div>
+
+                {/* EXPORT */}
+
+                <div className="reports-actions">
+                    <button
+                        type="button"
+                        onClick={exportReportCSV}
+                        disabled={
+                            filteredSurveyBilling.length === 0
+                        }
+                    >
+                        Export Report
+                    </button>
+                </div>
 
                 {loading && (
                     <p className="reports-loading">
@@ -251,118 +567,197 @@ function Reports() {
                     </p>
                 )}
 
-
                 {error && (
                     <p className="reports-error">
                         {error}
                     </p>
                 )}
 
-
                 {!loading && !error && (
                     <>
-
-
-                        {/* =========================
-                            SUMMARY
-                        ========================= */}
+                        {/* SUMMARY */}
 
                         <div className="reports-summary">
 
                             <div className="report-card">
-                                <span>Total Projects</span>
+                                <span>
+                                    Total Projects
+                                </span>
 
                                 <strong>
                                     {projects.length}
                                 </strong>
                             </div>
 
-
                             <div className="report-card">
-                                <span>Total Surveys</span>
+                                <span>
+                                    Total Surveys
+                                </span>
 
                                 <strong>
                                     {surveys.length}
                                 </strong>
                             </div>
 
-
                             <div className="report-card">
-                                <span>Total Vendors</span>
+                                <span>
+                                    Total Vendors
+                                </span>
 
                                 <strong>
-                                    {users.length}
+                                    {vendors.length}
                                 </strong>
                             </div>
 
-
                             <div className="report-card">
-                                <span>Total Budget</span>
+                                <span>
+                                    Total Budget
+                                </span>
 
                                 <strong>
-                                    ₹{totalBudget.toLocaleString("en-IN")}
+                                    ₹
+                                    {totalBudget.toLocaleString(
+                                        "en-IN"
+                                    )}
                                 </strong>
                             </div>
 
                         </div>
 
+                        {/* FINANCIAL SUMMARY */}
 
-                        {/* =========================
-                            PROJECT REPORT
-                        ========================= */}
+                        <div className="reports-summary">
+
+                            <div className="report-card">
+                                <span>
+                                    Client Revenue
+                                </span>
+
+                                <strong>
+                                    ₹
+                                    {totalClientRevenue.toLocaleString(
+                                        "en-IN"
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div className="report-card">
+                                <span>
+                                    Vendor Cost
+                                </span>
+
+                                <strong>
+                                    ₹
+                                    {totalVendorCost.toLocaleString(
+                                        "en-IN"
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div className="report-card">
+                                <span>
+                                    Total Profit
+                                </span>
+
+                                <strong>
+                                    ₹
+                                    {totalProfit.toLocaleString(
+                                        "en-IN"
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div className="report-card">
+                                <span>
+                                    Valid Completes
+                                </span>
+
+                                <strong>
+                                    {totalValidCompletes.toLocaleString(
+                                        "en-IN"
+                                    )}
+                                </strong>
+                            </div>
+
+                        </div>
+
+                        {/* PROJECT REPORT */}
 
                         <div className="report-section">
 
-                            <h2>Project Report</h2>
+                            <h2>
+                                Project Report
+                            </h2>
 
                             <div className="report-status-grid">
 
                                 <div className="report-status">
-                                    <strong>{activeProjects}</strong>
-                                    <span>Active</span>
+                                    <strong>
+                                        {activeProjects}
+                                    </strong>
+
+                                    <span>
+                                        Active
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{completedProjects}</strong>
-                                    <span>Completed</span>
+                                    <strong>
+                                        {completedProjects}
+                                    </strong>
+
+                                    <span>
+                                        Completed
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{pausedProjects}</strong>
-                                    <span>Paused</span>
+                                    <strong>
+                                        {pausedProjects}
+                                    </strong>
+
+                                    <span>
+                                        Paused
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{billedProjects}</strong>
-                                    <span>Billed</span>
+                                    <strong>
+                                        {billedProjects}
+                                    </strong>
+
+                                    <span>
+                                        Billed
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{draftProjects}</strong>
-                                    <span>Draft</span>
+                                    <strong>
+                                        {draftProjects}
+                                    </strong>
+
+                                    <span>
+                                        Draft
+                                    </span>
                                 </div>
 
                             </div>
 
                         </div>
 
-
-                        {/* =========================
-                            PROJECT STATUS CHART
-                        ========================= */}
+                        {/* PROJECT STATUS CHART */}
 
                         <div className="report-section">
 
-                            <h2>Project Status Distribution</h2>
+                            <h2>
+                                Project Status Distribution
+                            </h2>
 
                             {projectStatusData.length === 0 ? (
-
                                 <p>
                                     No project data available.
                                 </p>
-
                             ) : (
-
                                 <div className="report-chart">
 
                                     <ResponsiveContainer
@@ -373,7 +768,9 @@ function Reports() {
                                         <PieChart>
 
                                             <Pie
-                                                data={projectStatusData}
+                                                data={
+                                                    projectStatusData
+                                                }
                                                 dataKey="value"
                                                 nameKey="name"
                                                 cx="50%"
@@ -385,7 +782,10 @@ function Reports() {
                                             >
 
                                                 {projectStatusData.map(
-                                                    (entry, index) => (
+                                                    (
+                                                        entry,
+                                                        index
+                                                    ) => (
                                                         <Cell
                                                             key={`project-cell-${index}`}
                                                             fill={
@@ -412,68 +812,87 @@ function Reports() {
                                     </ResponsiveContainer>
 
                                 </div>
-
                             )}
 
                         </div>
 
-
-                        {/* =========================
-                            SURVEY REPORT
-                        ========================= */}
+                        {/* SURVEY REPORT */}
 
                         <div className="report-section">
 
-                            <h2>Survey Report</h2>
+                            <h2>
+                                Survey Report
+                            </h2>
 
                             <div className="report-status-grid">
 
                                 <div className="report-status">
-                                    <strong>{activeSurveys}</strong>
-                                    <span>Active</span>
+                                    <strong>
+                                        {activeSurveys}
+                                    </strong>
+
+                                    <span>
+                                        Active
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{completedSurveys}</strong>
-                                    <span>Completed</span>
+                                    <strong>
+                                        {completedSurveys}
+                                    </strong>
+
+                                    <span>
+                                        Completed
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{pausedSurveys}</strong>
-                                    <span>Paused</span>
+                                    <strong>
+                                        {pausedSurveys}
+                                    </strong>
+
+                                    <span>
+                                        Paused
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{billedSurveys}</strong>
-                                    <span>Billed</span>
+                                    <strong>
+                                        {billedSurveys}
+                                    </strong>
+
+                                    <span>
+                                        Billed
+                                    </span>
                                 </div>
 
                                 <div className="report-status">
-                                    <strong>{draftSurveys}</strong>
-                                    <span>Draft</span>
+                                    <strong>
+                                        {draftSurveys}
+                                    </strong>
+
+                                    <span>
+                                        Draft
+                                    </span>
                                 </div>
 
                             </div>
 
                         </div>
 
-
-                        {/* =========================
-                            SURVEY STATUS CHART
-                        ========================= */}
+                        {/* SURVEY STATUS CHART */}
 
                         <div className="report-section">
 
-                            <h2>Survey Status Distribution</h2>
+                            <h2>
+                                Survey Status Distribution
+                            </h2>
 
                             {surveyStatusData.length === 0 ? (
-
                                 <p>
                                     No survey data available.
                                 </p>
-
                             ) : (
-
                                 <div className="report-chart">
 
                                     <ResponsiveContainer
@@ -484,7 +903,9 @@ function Reports() {
                                         <PieChart>
 
                                             <Pie
-                                                data={surveyStatusData}
+                                                data={
+                                                    surveyStatusData
+                                                }
                                                 dataKey="value"
                                                 nameKey="name"
                                                 cx="50%"
@@ -496,7 +917,10 @@ function Reports() {
                                             >
 
                                                 {surveyStatusData.map(
-                                                    (entry, index) => (
+                                                    (
+                                                        entry,
+                                                        index
+                                                    ) => (
                                                         <Cell
                                                             key={`survey-cell-${index}`}
                                                             fill={
@@ -523,69 +947,74 @@ function Reports() {
                                     </ResponsiveContainer>
 
                                 </div>
-
                             )}
 
                         </div>
 
-
-                        {/* =========================
-                            SURVEY ANALYTICS
-                        ========================= */}
+                        {/* SURVEY ANALYTICS */}
 
                         <div className="report-section">
 
-                            <h2>Survey Analytics</h2>
+                            <h2>
+                                Survey Analytics
+                            </h2>
 
-                            {surveyAnalytics.length === 0 ? (
-
+                            {filteredSurveyAnalytics.length === 0 ? (
                                 <p>
                                     No survey analytics available.
                                 </p>
-
                             ) : (
-
                                 <div className="survey-analytics-grid">
 
-                                    {surveyAnalytics.map(
+                                    {filteredSurveyAnalytics.map(
                                         (analytics) => (
-
                                             <div
                                                 className="survey-analytics-card"
-                                                key={analytics.survey_id}
+                                                key={
+                                                    analytics.survey_id
+                                                }
                                             >
 
                                                 <h3>
-                                                    {analytics.survey_title}
+                                                    {
+                                                        analytics.survey_title
+                                                    }
                                                 </h3>
 
                                                 <div className="analytics-row">
                                                     <span>
-                                                        Completed Submissions
+                                                        Completed
+                                                        Submissions
                                                     </span>
 
                                                     <strong>
-                                                        {analytics.total_responses}
+                                                        {
+                                                            analytics.total_responses
+                                                        }
                                                     </strong>
                                                 </div>
 
                                                 <div className="analytics-row">
                                                     <span>
-                                                        Screening Attempts
+                                                        Participants
                                                     </span>
 
                                                     <strong>
-                                                        {analytics.total_screening_attempts}
+                                                        {
+                                                            analytics.total_respondents
+                                                        }
                                                     </strong>
                                                 </div>
 
                                                 <div className="analytics-row">
                                                     <span>
-                                                        Qualified
+                                                        Qualified Completes
                                                     </span>
 
                                                     <strong>
-                                                        {analytics.qualified_responses}
+                                                        {
+                                                            analytics.qualified_respondents
+                                                        }
                                                     </strong>
                                                 </div>
 
@@ -595,38 +1024,45 @@ function Reports() {
                                                     </span>
 
                                                     <strong>
-                                                        {analytics.disqualified_responses}
+                                                        {
+                                                            analytics.disqualified_responses
+                                                        }
                                                     </strong>
                                                 </div>
 
                                                 <div className="analytics-row">
                                                     <span>
-                                                        Qualification Rate
+                                                        Incidence Rate
                                                     </span>
 
                                                     <strong>
-                                                        {analytics.response_rate}%
+                                                        {
+                                                            analytics.incidence_rate
+                                                        }%
+                                                    </strong>
+                                                </div>
+
+                                                <div className="analytics-row">
+                                                    <span>Measured LOI</span>
+                                                    <strong>
+                                                        {analytics.loi != null
+                                                            ? `${analytics.loi} min`
+                                                            : "—"}
                                                     </strong>
                                                 </div>
 
                                             </div>
-
                                         )
                                     )}
 
                                 </div>
-
                             )}
 
                         </div>
 
-
-                        {/* =========================
-                            QUALIFICATION CHART
-                        ========================= */}
+                        {/* QUALIFICATION CHART */}
 
                         {qualificationData.length > 0 && (
-
                             <div className="report-section">
 
                                 <h2>
@@ -641,7 +1077,9 @@ function Reports() {
                                     >
 
                                         <BarChart
-                                            data={qualificationData}
+                                            data={
+                                                qualificationData
+                                            }
                                             margin={{
                                                 top: 20,
                                                 right: 30,
@@ -672,14 +1110,24 @@ function Reports() {
                                                 dataKey="Qualified"
                                                 name="Qualified"
                                                 fill="#1B2944"
-                                                radius={[4, 4, 0, 0]}
+                                                radius={[
+                                                    4,
+                                                    4,
+                                                    0,
+                                                    0,
+                                                ]}
                                             />
 
                                             <Bar
-                                                dataKey="Disqualified"
-                                                name="Disqualified"
-                                                fill="#EF4444"
-                                                radius={[4, 4, 0, 0]}
+                                                dataKey="OtherParticipants"
+                                                name="Other participants"
+                                                fill="#F9B233"
+                                                radius={[
+                                                    4,
+                                                    4,
+                                                    0,
+                                                    0,
+                                                ]}
                                             />
 
                                         </BarChart>
@@ -689,17 +1137,296 @@ function Reports() {
                                 </div>
 
                             </div>
-
                         )}
 
+                        {/* SURVEY FINANCIAL REPORT */}
+
+                        <div className="report-section">
+
+                            <h2>
+                                Survey Financial Report
+                            </h2>
+
+                            {filteredSurveyBilling.length === 0 ? (
+                                <p>
+                                    No financial data available.
+                                </p>
+                            ) : (
+                                <div className="financial-report-table-wrapper">
+
+                                    <table className="financial-report-table">
+
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    Survey
+                                                </th>
+
+                                                <th>
+                                                    Required
+                                                </th>
+
+                                                <th>
+                                                    Valid
+                                                </th>
+
+                                                <th>
+                                                    Completion
+                                                </th>
+
+                                                <th>
+                                                    Client Revenue
+                                                </th>
+
+                                                <th>
+                                                    Vendor Cost
+                                                </th>
+
+                                                <th>
+                                                    Profit
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            {filteredSurveyBilling.map(
+                                                (billing) => (
+                                                    <tr
+                                                        key={
+                                                            billing.survey_id
+                                                        }
+                                                    >
+
+                                                        <td>
+                                                            {
+                                                                billing.survey_title
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                billing.required_completes
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                billing.valid_completes
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {
+                                                                billing.completion_percentage
+                                                            }%
+                                                        </td>
+
+                                                        <td>
+                                                            ₹
+                                                            {Number(
+                                                                billing.client_revenue ||
+                                                                    0
+                                                            ).toLocaleString(
+                                                                "en-IN"
+                                                            )}
+                                                        </td>
+
+                                                        <td>
+                                                            ₹
+                                                            {Number(
+                                                                billing.vendor_cost ||
+                                                                    0
+                                                            ).toLocaleString(
+                                                                "en-IN"
+                                                            )}
+                                                        </td>
+
+                                                        <td>
+                                                            ₹
+                                                            {Number(
+                                                                billing.profit ||
+                                                                    0
+                                                            ).toLocaleString(
+                                                                "en-IN"
+                                                            )}
+                                                        </td>
+
+                                                    </tr>
+                                                )
+                                            )}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+                            )}
+
+                        </div>
+
+                        {/* VENDOR FINANCIAL ANALYSIS */}
+
+                        <div className="report-section">
+
+                            <h2>
+                                Vendor Financial Analysis
+                            </h2>
+
+                            {vendorFinancialChartData.length === 0 ? (
+                                <p>
+                                    No vendor financial data available.
+                                </p>
+                            ) : (
+                                <div className="report-chart">
+
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height="100%"
+                                    >
+
+                                        <BarChart
+                                            data={
+                                                vendorFinancialChartData
+                                            }
+                                            margin={{
+                                                top: 20,
+                                                right: 30,
+                                                left: 20,
+                                                bottom: 60,
+                                            }}
+                                        >
+
+                                            <CartesianGrid
+                                                strokeDasharray="3 3"
+                                            />
+
+                                            <XAxis
+                                                dataKey="vendor"
+                                                angle={-20}
+                                                textAnchor="end"
+                                                interval={0}
+                                                height={70}
+                                            />
+
+                                            <YAxis />
+
+                                            <Tooltip />
+
+                                            <Legend />
+
+                                            <Bar
+                                                dataKey="validCompletes"
+                                                name="Valid Completes"
+                                                fill="#1B2944"
+                                                radius={[
+                                                    4,
+                                                    4,
+                                                    0,
+                                                    0,
+                                                ]}
+                                            />
+
+                                            <Bar
+                                                dataKey="vendorCost"
+                                                name="Vendor Cost"
+                                                fill="#F59E0B"
+                                                radius={[
+                                                    4,
+                                                    4,
+                                                    0,
+                                                    0,
+                                                ]}
+                                            />
+
+                                        </BarChart>
+
+                                    </ResponsiveContainer>
+
+                                </div>
+                            )}
+
+                        </div>
+
+                        {/* VENDOR FINANCIAL DETAILS */}
+
+                        <div className="report-section">
+
+                            <h2>
+                                Vendor Financial Details
+                            </h2>
+
+                            {vendorFinancialChartData.length === 0 ? (
+                                <p>
+                                    No vendor financial data available.
+                                </p>
+                            ) : (
+                                <div className="financial-report-table-wrapper">
+
+                                    <table className="financial-report-table">
+
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    Vendor
+                                                </th>
+
+                                                <th>
+                                                    Valid Completes
+                                                </th>
+
+                                                <th>
+                                                    Vendor Cost
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            {vendorFinancialChartData.map(
+                                                (vendor) => (
+                                                    <tr
+                                                        key={
+                                                            vendor.vendor
+                                                        }
+                                                    >
+
+                                                        <td>
+                                                            {
+                                                                vendor.vendor
+                                                            }
+                                                        </td>
+
+                                                        <td>
+                                                            {vendor.validCompletes.toLocaleString(
+                                                                "en-IN"
+                                                            )}
+                                                        </td>
+
+                                                        <td>
+                                                            ₹
+                                                            {vendor.vendorCost.toLocaleString(
+                                                                "en-IN"
+                                                            )}
+                                                        </td>
+
+                                                    </tr>
+                                                )
+                                            )}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+                            )}
+
+                        </div>
                     </>
                 )}
-
             </div>
-
         </DashboardLayout>
     );
 }
-
 
 export default Reports;

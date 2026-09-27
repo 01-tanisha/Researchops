@@ -1,0 +1,323 @@
+.manager-page {
+    min-height: calc(100vh - 88px);
+    padding: 28px;
+    color: #202c29;
+}
+
+.manager-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.manager-eyebrow {
+    margin: 0 0 8px;
+    color: #b65d40;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+}
+
+.manager-page-header h1 {
+    margin: 0 0 6px;
+    color: #183b33;
+    font-size: 30px;
+}
+
+.manager-page-header p:last-child {
+    margin: 0;
+    color: #66736d;
+    font-size: 14px;
+}
+
+.manager-count {
+    min-width: 100px;
+    padding: 12px 16px;
+    border-left: 3px solid #d5684a;
+    background: #fff;
+}
+
+.manager-count strong,
+.manager-count span {
+    display: block;
+}
+
+.manager-count strong {
+    color: #183b33;
+    font-size: 24px;
+}
+
+.manager-count span {
+    color: #66736d;
+    font-size: 12px;
+}
+
+.manager-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #dce3de;
+    background: #fff;
+}
+
+.manager-section {
+    margin-bottom: 30px;
+}
+
+.manager-section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin: 28px 0 12px;
+}
+
+.manager-section-header h2 {
+    margin: 0 0 5px;
+    color: #183b33;
+    font-size: 19px;
+}
+
+.manager-section-header p {
+    margin: 0;
+    color: #66736d;
+    font-size: 12px;
+}
+
+.manager-section-header > span {
+    color: #a94e36;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.manager-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.manager-table th,
+.manager-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e8ede9;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.manager-table th {
+    background: #f2f6f2;
+    color: #52645b;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.manager-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.manager-table td small {
+    display: block;
+    margin-top: 5px;
+    color: #7b8981;
+    font-size: 11px;
+    white-space: normal;
+}
+
+.manager-table td a {
+    color: #23614d;
+    text-decoration: none;
+}
+
+.verification-table {
+    min-width: 1100px;
+}
+
+.verification-table td {
+    max-width: 260px;
+    white-space: normal;
+    line-height: 1.45;
+}
+
+.verification-table td.verification-details {
+    min-width: 220px;
+    color: #53635a;
+}
+
+.manager-name {
+    color: #183b33;
+    font-weight: 700;
+}
+
+.manager-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.manager-status.is-active {
+    background: #e5f2eb;
+    color: #236344;
+}
+
+.manager-status.is-inactive {
+    background: #fbe9e5;
+    color: #9a3d2a;
+}
+
+.manager-status.pending {
+    background: #fff1dc;
+    color: #8a5b13;
+}
+
+.manager-status.approved {
+    background: #e5f2eb;
+    color: #236344;
+}
+
+.manager-status.rejected {
+    background: #fbe9e5;
+    color: #9a3d2a;
+}
+
+.manager-review-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.manager-approve,
+.manager-reject,
+.manager-invite button {
+    min-height: 32px;
+    padding: 0 9px;
+    border: 1px solid #cbd5cf;
+    border-radius: 4px;
+    background: #fff;
+    color: #24483b;
+    font-size: 11px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.manager-approve {
+    border-color: #286c50;
+    background: #286c50;
+    color: #fff;
+}
+
+.manager-reject {
+    border-color: #c76a54;
+    color: #a6422e;
+}
+
+.manager-approve:disabled,
+.manager-reject:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.manager-pending-setup,
+.manager-active-setup {
+    color: #8a5b13;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.manager-active-setup { color: #236344; }
+
+.manager-notice {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-left: 3px solid #286c50;
+    background: #eaf4ed;
+    color: #25543d;
+    font-size: 13px;
+}
+
+.manager-invite {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 20px;
+    padding: 14px;
+    border: 1px solid #d6e1d8;
+    background: #fff;
+}
+
+.manager-invite > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.manager-invite strong {
+    color: #183b33;
+    font-size: 13px;
+}
+
+.manager-invite span {
+    overflow-wrap: anywhere;
+    color: #23614d;
+    font-size: 12px;
+}
+
+.manager-invite small {
+    color: #7b8981;
+    font-size: 11px;
+}
+
+.manager-delete {
+    padding: 7px 10px;
+    border: 1px solid #c76a54;
+    border-radius: 4px;
+    background: #fff;
+    color: #a6422e;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.manager-delete:hover:not(:disabled) {
+    background: #fff1ed;
+}
+
+.manager-delete:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.manager-error,
+.manager-state {
+    padding: 16px;
+    color: #65736c;
+    font-size: 14px;
+}
+
+.manager-error {
+    color: #a12f2a;
+}
+
+@media (max-width: 640px) {
+    .manager-page {
+        padding: 20px 14px;
+    }
+
+    .manager-page-header {
+        align-items: flex-start;
+    }
+
+    .manager-count {
+        min-width: 78px;
+        padding: 9px 11px;
+    }
+
+    .manager-invite {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

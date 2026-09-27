@@ -377,3 +377,65 @@ export async function updateSurveyStatus(surveyId, status) {
 
     return data;
 }
+
+export async function startPublicSurvey(
+    publicToken,
+    respondentName,
+    respondentId
+) {
+    const url =
+        `/api/public-survey/${publicToken}/start/` +
+        `?vendor=${encodeURIComponent(
+            new URLSearchParams(window.location.search).get("vendor") || ""
+        )}`;
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            respondent_name: respondentName,
+            respondent_id: respondentId,
+        }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            "Unable to start survey."
+        );
+    }
+
+    return data;
+}
+
+export async function completePublicSurvey(
+    submissionId
+) {
+    const response = await fetch(
+        "/api/public-survey/submission/complete/",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                submission_id: submissionId,
+            }),
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            "Unable to complete survey."
+        );
+    }
+
+    return data;
+}

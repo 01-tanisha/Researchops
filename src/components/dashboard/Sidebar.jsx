@@ -8,12 +8,16 @@ import {
     FaUsers,
     FaChartBar,
     FaCog,
-    FaUser,
+    FaUserShield,
+    FaChevronDown,
 } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import LogoutButton from "../auth/LogoutButton";
 import "./Sidebar.css";
 
 function Sidebar() {
     const [user, setUser] = useState(null);
+    const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
     useEffect(() => {
         async function loadUser() {
@@ -110,26 +114,49 @@ function Sidebar() {
                 </NavLink>
             </nav>
 
-            <div className="menu-title">ACCOUNT</div>
-
-            {user && (
-                <div className="sidebar-user">
-                    <FaUser />
-                    <span>{user.username}</span>
-                </div>
+            {user?.is_superuser && (
+                <>
+                    <div className="menu-title">ADMIN</div>
+                    <nav>
+                    <NavLink
+                        to="/admin/project-managers"
+                        className={({ isActive }) =>
+                            isActive ? "active-link" : ""
+                        }
+                    >
+                        <FaUserShield />
+                        Project Managers
+                    </NavLink>
+                    </nav>
+                </>
             )}
 
-            <nav>
-                <NavLink
-                    to="/settings"
-                    className={({ isActive }) =>
-                        isActive ? "active-link" : ""
-                    }
+            <div className="sidebar-account">
+                {accountMenuOpen && (
+                    <div className="sidebar-account-menu">
+                        <Link to="/settings" onClick={() => setAccountMenuOpen(false)}>
+                            <FaCog />
+                            Settings
+                        </Link>
+                        <LogoutButton />
+                    </div>
+                )}
+                <button
+                    type="button"
+                    className="sidebar-account-trigger"
+                    aria-expanded={accountMenuOpen}
+                    aria-label="Open account menu"
+                    onClick={() => setAccountMenuOpen((open) => !open)}
                 >
-                    <FaCog />
-                    Settings
-                </NavLink>
-            </nav>
+                    <span className="sidebar-account-avatar">
+                        {(user?.first_name || user?.username || "U").charAt(0).toUpperCase()}
+                    </span>
+                    <span className="sidebar-account-name">
+                        {user?.full_name || [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.username || "Account"}
+                    </span>
+                    <FaChevronDown className={accountMenuOpen ? "account-chevron open" : "account-chevron"} />
+                </button>
+            </div>
         </aside>
     );
 }

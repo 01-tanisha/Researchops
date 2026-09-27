@@ -4,19 +4,15 @@ import {
     createVendor,
     updateVendor,
     deleteVendor,
-    getVendorAllocations,
-    createVendorAllocation,
-    updateVendorAllocation,
-    deleteVendorAllocation,
 } from "../services/api/projectApi";
-import { getSurveys } from "../services/api/surveyApi";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
+import Modal from "../components/common/Modal";
 import "./Vendors.css";
 
 function Vendors() {
     const [vendors, setVendors] = useState([]);
-    const [surveys, setSurveys] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -24,42 +20,28 @@ function Vendors() {
     const [phone, setPhone] = useState("");
 
     const [editingId, setEditingId] = useState(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const [selectedVendor, setSelectedVendor] = useState(null);
-    const [allocations, setAllocations] = useState([]);
-    const [showAllocations, setShowAllocations] = useState(false);
-
-    const [allocationSurvey, setAllocationSurvey] = useState("");
-    const [assignedCompletes, setAssignedCompletes] = useState("");
-    const [deliveredCompletes, setDeliveredCompletes] = useState("");
-    const [validCompletes, setValidCompletes] = useState("");
-    const [vendorCpi, setVendorCpi] = useState("");
-    const [feasibility, setFeasibility] = useState("");
-    const [allocationStatus, setAllocationStatus] = useState("Pending");
-    const [allocationNotes, setAllocationNotes] = useState("");
-    const [editingAllocationId, setEditingAllocationId] = useState(null);
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [allocationLoading, setAllocationLoading] = useState(false);
-    const [allocationSaving, setAllocationSaving] = useState(false);
-
     const [error, setError] = useState("");
-    const [allocationError, setAllocationError] = useState("");
+
+    const searchQuery = searchTerm.trim().toLowerCase();
+    const filteredVendors = vendors.filter((vendor) =>
+        [vendor.name, vendor.company, vendor.email, vendor.phone]
+            .some((value) => String(value || "").toLowerCase().includes(searchQuery))
+    );
 
     useEffect(() => {
         let cancelled = false;
 
         async function fetchData() {
             try {
-                const [vendorData, surveyData] = await Promise.all([
-                    getVendors(),
-                    getSurveys(),
-                ]);
+                const vendorData = await getVendors();
 
                 if (!cancelled) {
                     setVendors(Array.isArray(vendorData) ? vendorData : []);
-                    setSurveys(Array.isArray(surveyData) ? surveyData : []);
                     setError("");
                 }
             } catch (error) {
@@ -89,6 +71,7 @@ function Vendors() {
         setPhone("");
         setEditingId(null);
         setError("");
+        setIsFormOpen(false);
     }
 
     async function handleSubmit(event) {
@@ -148,11 +131,7 @@ function Vendors() {
         setCompany(vendor.company || "");
         setPhone(vendor.phone || "");
         setError("");
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
+        setIsFormOpen(true);
     }
 
     async function handleDelete(vendor) {
@@ -175,10 +154,6 @@ function Vendors() {
                 )
             );
 
-            if (selectedVendor?.id === vendor.id) {
-                closeAllocations();
-            }
-
             if (editingId === vendor.id) {
                 resetForm();
             }
@@ -188,260 +163,31 @@ function Vendors() {
         }
     }
 
-    function resetAllocationForm() {
-        setAllocationSurvey("");
-        setAssignedCompletes("");
-        setDeliveredCompletes("");
-        setValidCompletes("");
-        setVendorCpi("");
-        setFeasibility("");
-        setAllocationStatus("Pending");
-        setAllocationNotes("");
-        setEditingAllocationId(null);
-        setAllocationError("");
-    }
-
-    async function openAllocations(vendor) {
-        try {
-            setSelectedVendor(vendor);
-            setShowAllocations(true);
-            setAllocationLoading(true);
-            setAllocationError("");
-            resetAllocationForm();
-
-            const allAllocations = [];
-
-            for (const survey of surveys) {
-                try {
-                    const data = await getVendorAllocations(survey.id);
-
-                    if (Array.isArray(data)) {
-                        data.forEach((allocation) => {
-                            if (allocation.vendor_id === vendor.id) {
-                                allAllocations.push({
-                                    ...allocation,
-                                    survey_title:
-                                        allocation.survey_title ||
-                                        survey.title,
-                                });
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.error(
-                        `Failed to load allocations for survey ${survey.id}:`,
-                        error
-                    );
-                }
-            }
-
-            setAllocations(allAllocations);
-        } catch (error) {
-            console.error("Failed to load allocations:", error);
-            setAllocationError(
-                error.message || "Unable to load allocations."
-            );
-        } finally {
-            setAllocationLoading(false);
-        }
-    }
-
-    function closeAllocations() {
-        setShowAllocations(false);
-        setSelectedVendor(null);
-        setAllocations([]);
-        resetAllocationForm();
-    }
-
-    async function handleAllocationSubmit(event) {
-        event.preventDefault();
-
-        if (!selectedVendor) {
-            return;
-        }
-
-        if (!allocationSurvey) {
-            setAllocationError("Please select a survey.");
-            return;
-        }
-
-        if (assignedCompletes === "") {
-            setAllocationError("Assigned completes are required.");
-            return;
-        }
-
-        try {
-            setAllocationSaving(true);
-            setAllocationError("");
-
-            const allocationData = {
-                vendor_id: selectedVendor.id,
-                assigned_completes: Number(assignedCompletes),
-                delivered_completes:
-                    deliveredCompletes === ""
-                        ? 0
-                        : Number(deliveredCompletes),
-                valid_completes:
-                    validCompletes === ""
-                        ? 0
-                        : Number(validCompletes),
-                vendor_cpi:
-                    vendorCpi === "" ? 0 : Number(vendorCpi),
-                feasibility:
-                    feasibility === "" ? 0 : Number(feasibility),
-                status: allocationStatus,
-                notes: allocationNotes.trim(),
-            };
-
-            if (editingAllocationId) {
-                const updatedAllocation =
-                    await updateVendorAllocation(
-                        editingAllocationId,
-                        allocationData
-                    );
-
-                setAllocations((current) =>
-                    current.map((allocation) =>
-                        allocation.id === editingAllocationId
-                            ? {
-                                  ...updatedAllocation,
-                                  survey_title:
-                                      allocation.survey_title,
-                              }
-                            : allocation
-                    )
-                );
-            } else {
-                const newAllocation =
-                    await createVendorAllocation(
-                        Number(allocationSurvey),
-                        allocationData
-                    );
-
-                const selectedSurvey = surveys.find(
-                    (survey) =>
-                        survey.id === Number(allocationSurvey)
-                );
-
-                setAllocations((current) => [
-                    {
-                        ...newAllocation,
-                        survey_title:
-                            newAllocation.survey_title ||
-                            selectedSurvey?.title ||
-                            "Survey",
-                    },
-                    ...current,
-                ]);
-            }
-
-            resetAllocationForm();
-        } catch (error) {
-            console.error(
-                "Failed to save allocation:",
-                error
-            );
-
-            setAllocationError(
-                error.message ||
-                    "Unable to save vendor allocation."
-            );
-        } finally {
-            setAllocationSaving(false);
-        }
-    }
-
-    function handleEditAllocation(allocation) {
-        setEditingAllocationId(allocation.id);
-
-        setAllocationSurvey(
-            allocation.survey_id
-                ? String(allocation.survey_id)
-                : ""
-        );
-
-        setAssignedCompletes(
-            allocation.assigned_completes ?? ""
-        );
-
-        setDeliveredCompletes(
-            allocation.delivered_completes ?? ""
-        );
-
-        setValidCompletes(
-            allocation.valid_completes ?? ""
-        );
-
-        setVendorCpi(
-            allocation.vendor_cpi ?? ""
-        );
-
-        setFeasibility(
-            allocation.feasibility ?? ""
-        );
-
-        setAllocationStatus(
-            allocation.status || "Pending"
-        );
-
-        setAllocationNotes(
-            allocation.notes || ""
-        );
-
-        setAllocationError("");
-    }
-
-    async function handleDeleteAllocation(allocation) {
-        const confirmed = window.confirm(
-            "Are you sure you want to delete this allocation?"
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
-        try {
-            setAllocationError("");
-
-            await deleteVendorAllocation(allocation.id);
-
-            setAllocations((current) =>
-                current.filter(
-                    (item) => item.id !== allocation.id
-                )
-            );
-
-            if (
-                editingAllocationId === allocation.id
-            ) {
-                resetAllocationForm();
-            }
-        } catch (error) {
-            console.error(
-                "Failed to delete allocation:",
-                error
-            );
-
-            setAllocationError(
-                error.message ||
-                    "Unable to delete allocation."
-            );
-        }
-    }
-
     return (
         <DashboardLayout>
             <div className="vendors-page">
-                <h1 className="vendors-title">
-                    Vendors
-                </h1>
+                <div className="vendors-page-header">
+                    <div>
+                        <h1 className="vendors-title">Vendors</h1>
+                        <p className="vendors-subtitle">Manage vendor contacts and company details.</p>
+                    </div>
+                    <button
+                        type="button"
+                        className="vendor-add-button"
+                        onClick={() => {
+                            resetForm();
+                            setIsFormOpen(true);
+                        }}
+                    >
+                        + Add Vendor
+                    </button>
+                </div>
 
-                <div className="vendor-form-card">
-                    <h2>
-                        {editingId
-                            ? "Edit Vendor"
-                            : "Add Vendor"}
-                    </h2>
+                <Modal
+                    isOpen={isFormOpen}
+                    onClose={resetForm}
+                    title={editingId ? "Edit Vendor" : "Add Vendor"}
+                >
 
                     {error && (
                         <p className="vendor-error">
@@ -537,15 +283,28 @@ function Vendors() {
                             )}
                         </div>
                     </form>
-                </div>
+                </Modal>
 
                 <div className="vendors-list-card">
                     <div className="vendors-list-header">
                         <h2>Vendor List</h2>
 
-                        <span>
-                            {vendors.length} Vendors
-                        </span>
+                        <div className="directory-list-tools">
+                            <label className="directory-search">
+                                <span className="visually-hidden">Search vendors</span>
+                                <input
+                                    type="search"
+                                    placeholder="Search vendors..."
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                />
+                            </label>
+                            <span>
+                                {filteredVendors.length === vendors.length
+                                    ? `${vendors.length} Vendors`
+                                    : `${filteredVendors.length} of ${vendors.length} Vendors`}
+                            </span>
+                        </div>
                     </div>
 
                     {loading && (
@@ -563,7 +322,14 @@ function Vendors() {
                         )}
 
                     {!loading &&
-                        vendors.length > 0 && (
+                        !error &&
+                        vendors.length > 0 && filteredVendors.length === 0 && (
+                            <p className="vendors-message">No vendors match “{searchTerm}”.</p>
+                        )}
+
+                    {!loading &&
+                        !error &&
+                        filteredVendors.length > 0 && (
                             <div className="vendors-table-wrapper">
                                 <table className="vendors-table">
                                     <thead>
@@ -577,7 +343,7 @@ function Vendors() {
                                     </thead>
 
                                     <tbody>
-                                        {vendors.map(
+                                        {filteredVendors.map(
                                             (vendor) => (
                                                 <tr
                                                     key={
@@ -618,17 +384,6 @@ function Vendors() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    openAllocations(
-                                                                        vendor
-                                                                    )
-                                                                }
-                                                            >
-                                                                Allocations
-                                                            </button>
-
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
                                                                     handleEdit(
                                                                         vendor
                                                                     )
@@ -659,442 +414,6 @@ function Vendors() {
                         )}
                 </div>
 
-                {showAllocations && selectedVendor && (
-                    <div className="allocation-modal-overlay">
-                        <div className="allocation-modal">
-                            <div className="allocation-modal-header">
-                                <div>
-                                    <h2>
-                                        Vendor Allocations
-                                    </h2>
-
-                                    <p>
-                                        {
-                                            selectedVendor.company ||
-                                            selectedVendor.name
-                                        }
-                                    </p>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    className="allocation-close-button"
-                                    onClick={
-                                        closeAllocations
-                                    }
-                                >
-                                    ×
-                                </button>
-                            </div>
-
-                            {allocationError && (
-                                <p className="vendor-error">
-                                    {allocationError}
-                                </p>
-                            )}
-
-                            <form
-                                className="allocation-form"
-                                onSubmit={
-                                    handleAllocationSubmit
-                                }
-                            >
-                                <h3>
-                                    {editingAllocationId
-                                        ? "Edit Allocation"
-                                        : "Add Allocation"}
-                                </h3>
-
-                                <div className="allocation-form-grid">
-                                    <div>
-                                        <label>
-                                            Survey
-                                        </label>
-
-                                        <select
-                                            value={
-                                                allocationSurvey
-                                            }
-                                            onChange={(event) =>
-                                                setAllocationSurvey(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                            disabled={
-                                                !!editingAllocationId
-                                            }
-                                        >
-                                            <option value="">
-                                                Select survey
-                                            </option>
-
-                                            {surveys.map(
-                                                (survey) => (
-                                                    <option
-                                                        key={
-                                                            survey.id
-                                                        }
-                                                        value={
-                                                            survey.id
-                                                        }
-                                                    >
-                                                        {
-                                                            survey.title
-                                                        }
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label>
-                                            Assigned Completes
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={
-                                                assignedCompletes
-                                            }
-                                            onChange={(event) =>
-                                                setAssignedCompletes(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label>
-                                            Delivered Completes
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={
-                                                deliveredCompletes
-                                            }
-                                            onChange={(event) =>
-                                                setDeliveredCompletes(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label>
-                                            Valid Completes
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={
-                                                validCompletes
-                                            }
-                                            onChange={(event) =>
-                                                setValidCompletes(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label>
-                                            Vendor CPI
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={vendorCpi}
-                                            onChange={(event) =>
-                                                setVendorCpi(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label>
-                                            Feasibility
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={feasibility}
-                                            onChange={(event) =>
-                                                setFeasibility(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label>Status</label>
-
-                                        <select
-                                            value={
-                                                allocationStatus
-                                            }
-                                            onChange={(event) =>
-                                                setAllocationStatus(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        >
-                                            <option value="Pending">
-                                                Pending
-                                            </option>
-                                            <option value="Active">
-                                                Active
-                                            </option>
-                                            <option value="Quota Full">
-                                                Quota Full
-                                            </option>
-                                            <option value="Completed">
-                                                Completed
-                                            </option>
-                                            <option value="Paused">
-                                                Paused
-                                            </option>
-                                        </select>
-                                    </div>
-
-                                    <div className="allocation-notes">
-                                        <label>Notes</label>
-
-                                        <textarea
-                                            rows="3"
-                                            placeholder="Add notes"
-                                            value={
-                                                allocationNotes
-                                            }
-                                            onChange={(event) =>
-                                                setAllocationNotes(
-                                                    event
-                                                        .target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="allocation-form-actions">
-                                    <button
-                                        type="submit"
-                                        disabled={
-                                            allocationSaving
-                                        }
-                                    >
-                                        {allocationSaving
-                                            ? "Saving..."
-                                            : editingAllocationId
-                                              ? "Update Allocation"
-                                              : "Add Allocation"}
-                                    </button>
-
-                                    {editingAllocationId && (
-                                        <button
-                                            type="button"
-                                            className="vendor-cancel-button"
-                                            onClick={
-                                                resetAllocationForm
-                                            }
-                                        >
-                                            Cancel
-                                        </button>
-                                    )}
-                                </div>
-                            </form>
-
-                            <div className="allocations-list">
-                                <h3>
-                                    Current Allocations
-                                </h3>
-
-                                {allocationLoading ? (
-                                    <p className="vendors-message">
-                                        Loading allocations...
-                                    </p>
-                                ) : allocations.length ===
-                                  0 ? (
-                                    <p className="vendors-message">
-                                        No allocations found for
-                                        this vendor.
-                                    </p>
-                                ) : (
-                                    <div className="vendors-table-wrapper">
-                                        <table className="vendors-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>
-                                                        Survey
-                                                    </th>
-                                                    <th>
-                                                        Assigned
-                                                    </th>
-                                                    <th>
-                                                        Delivered
-                                                    </th>
-                                                    <th>
-                                                        Valid
-                                                    </th>
-                                                    <th>
-                                                        Remaining
-                                                    </th>
-                                                    <th>
-                                                        CPI
-                                                    </th>
-                                                    <th>
-                                                        Feasibility
-                                                    </th>
-                                                    <th>
-                                                        Status
-                                                    </th>
-                                                    <th>
-                                                        Actions
-                                                    </th>
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-                                                {allocations.map(
-                                                    (
-                                                        allocation
-                                                    ) => (
-                                                        <tr
-                                                            key={
-                                                                allocation.id
-                                                            }
-                                                        >
-                                                            <td>
-                                                                {
-                                                                    allocation.survey_title
-                                                                }
-                                                            </td>
-
-                                                            <td>
-                                                                {
-                                                                    allocation.assigned_completes
-                                                                }
-                                                            </td>
-
-                                                            <td>
-                                                                {
-                                                                    allocation.delivered_completes
-                                                                }
-                                                            </td>
-
-                                                            <td>
-                                                                {
-                                                                    allocation.valid_completes
-                                                                }
-                                                            </td>
-
-                                                            <td>
-                                                                {
-                                                                    allocation.remaining_completes ??
-                                                                    Math.max(
-                                                                        Number(
-                                                                            allocation.assigned_completes ||
-                                                                                0
-                                                                        ) -
-                                                                            Number(
-                                                                                allocation.delivered_completes ||
-                                                                                    0
-                                                                            ),
-                                                                        0
-                                                                    )
-                                                                }
-                                                            </td>
-
-                                                            <td>
-                                                                ₹
-                                                                {Number(
-                                                                    allocation.vendor_cpi ||
-                                                                        0
-                                                                ).toLocaleString(
-                                                                    "en-IN",
-                                                                    {
-                                                                        minimumFractionDigits: 2,
-                                                                    }
-                                                                )}
-                                                            </td>
-
-                                                            <td>
-                                                                {
-                                                                    allocation.feasibility
-                                                                }
-                                                            </td>
-
-                                                            <td>
-                                                                {
-                                                                    allocation.status
-                                                                }
-                                                            </td>
-
-                                                            <td>
-                                                                <div className="vendor-actions">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            handleEditAllocation(
-                                                                                allocation
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-
-                                                                    <button
-                                                                        type="button"
-                                                                        className="delete-button"
-                                                                        onClick={() =>
-                                                                            handleDeleteAllocation(
-                                                                                allocation
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Delete
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </DashboardLayout>
     );

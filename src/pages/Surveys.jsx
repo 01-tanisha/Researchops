@@ -1,22 +1,25 @@
 import { useEffect, useState } from "react";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
-import SurveyCard from "../components/surveys/SurveyCard";
+import SurveyTableRow from "../components/surveys/SurveyTableRow";
 import SurveyForm from "../components/surveys/SurveyForm";
-import SurveyDetails from "../components/surveys/SurveyDetails";
+import SurveyResponses from "../components/surveys/SurveyResponse";
+import { useNavigate } from "react-router-dom";
 
-import { getSurveys } from "../services/api/surveyApi";
+import { getSurveyAnalytics, getSurveys } from "../services/api/surveyApi";
 
 import "./Surveys.css";
 
 function Surveys() {
+    const navigate = useNavigate();
     const [surveys, setSurveys] = useState([]);
+    const [analyticsBySurvey, setAnalyticsBySurvey] = useState({});
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
     const [showSurveyForm, setShowSurveyForm] = useState(false);
-    const [selectedSurvey, setSelectedSurvey] = useState(null);
+    const [responsesSurvey, setResponsesSurvey] = useState(null);
 
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
@@ -42,11 +45,20 @@ function Surveys() {
                 setError("");
 
                 const data = await getSurveys();
+                const safeSurveys = Array.isArray(data) ? data : [];
 
-                setSurveys(
-                    Array.isArray(data)
-                        ? data
-                        : []
+                setSurveys(safeSurveys);
+                const analyticsResults = await Promise.allSettled(
+                    safeSurveys.map((survey) => getSurveyAnalytics(survey.id))
+                );
+                setAnalyticsBySurvey(
+                    Object.fromEntries(
+                        analyticsResults.flatMap((result, index) =>
+                            result.status === "fulfilled"
+                                ? [[safeSurveys[index].id, result.value]]
+                                : []
+                        )
+                    )
                 );
             } catch (error) {
                 console.error(
@@ -70,11 +82,17 @@ function Surveys() {
     // Survey Created
     // --------------------------------------------------
 
-    const handleSurveyCreated = (newSurvey) => {
+    const handleSurveyCreated = async (newSurvey) => {
         setSurveys((previousSurveys) => [
             newSurvey,
             ...previousSurveys,
         ]);
+        try {
+            const analytics = await getSurveyAnalytics(newSurvey.id);
+            setAnalyticsBySurvey((current) => ({ ...current, [newSurvey.id]: analytics }));
+        } catch (analyticsError) {
+            console.error("Unable to load new survey analytics:", analyticsError);
+        }
 
         setShowSurveyForm(false);
     };
@@ -96,16 +114,6 @@ function Surveys() {
                     : survey
             )
         );
-
-        if (
-            selectedSurvey &&
-            selectedSurvey.id === updatedSurvey.id
-        ) {
-            setSelectedSurvey((previousSurvey) => ({
-                ...previousSurvey,
-                ...updatedSurvey,
-            }));
-        }
     };
 
     // --------------------------------------------------
@@ -120,12 +128,12 @@ function Surveys() {
             )
         );
 
-        if (
-            selectedSurvey &&
-            selectedSurvey.id === surveyId
-        ) {
-            setSelectedSurvey(null);
-        }
+        setAnalyticsBySurvey((current) => {
+            const next = { ...current };
+            delete next[surveyId];
+            return next;
+        });
+
     };
 
     // --------------------------------------------------
@@ -160,15 +168,18 @@ function Surveys() {
                     ?.toLowerCase() || "";
 
             const client =
-                survey.client
+                (survey.client_name || survey.client)
                     ?.toLowerCase() || "";
+
+            const project = survey.project_title?.toLowerCase() || "";
 
             const status =
                 survey.status || "";
 
             const matchesSearch =
                 title.includes(search) ||
-                client.includes(search);
+                client.includes(search) ||
+                project.includes(search);
 
             const matchesStatus =
                 statusFilter === "All" ||
@@ -314,7 +325,7 @@ function Surveys() {
 
                     <input
                         type="text"
-                        placeholder="Search by survey name or client..."
+                        placeholder="Search surveys, clients, or projects..."
                         value={searchTerm}
                         onChange={(event) =>
                             setSearchTerm(
@@ -467,31 +478,37 @@ function Surveys() {
                 {!isLoading &&
                     !error &&
                     filteredSurveys.length > 0 && (
-                        <div className="surveys-grid">
-
-                            {filteredSurveys.map(
-                                (survey) => (
-                                    <SurveyCard
-                                        key={survey.id}
-                                        survey={survey}
-
-                                        onView={() =>
-                                            setSelectedSurvey(
-                                                survey
-                                            )
-                                        }
-
-                                        onSurveyUpdated={
-                                            handleSurveyUpdated
-                                        }
-
-                                        onSurveyDeleted={
-                                            handleSurveyDeleted
-                                        }
-                                    />
-                                )
-                            )}
-
+                        <div className="surveys-table-wrap">
+                            <table className="surveys-table">
+                                <thead>
+                                    <tr>
+                                        <th>Survey</th>
+                                        <th>Client</th>
+                                        <th>Project</th>
+                                        <th>Project Manager</th>
+                                        <th>Target LOI</th>
+                                        <th>Measured LOI</th>
+                                        <th>Target IR</th>
+                                        <th>Measured IR</th>
+                                        <th>Completes</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredSurveys.map((survey) => (
+                                        <SurveyTableRow
+                                            key={survey.id}
+                                            survey={survey}
+                                            analytics={analyticsBySurvey[survey.id]}
+                                            onView={() => navigate(`/surveys/${survey.id}`)}
+                                            onViewResponses={() => setResponsesSurvey(survey)}
+                                            onSurveyUpdated={handleSurveyUpdated}
+                                            onSurveyDeleted={handleSurveyDeleted}
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
 
@@ -523,32 +540,11 @@ function Surveys() {
                 </div>
             )}
 
-            {/* ---------------------------------------- */}
-            {/* Survey Details Modal */}
-            {/* ---------------------------------------- */}
-
-            {selectedSurvey && (
-                <div className="survey-modal-overlay">
-
-                    <div className="survey-modal">
-
-                        <SurveyDetails
-                            survey={selectedSurvey}
-
-                            onSurveyUpdated={
-                                handleSurveyUpdated
-                            }
-
-                            onClose={() =>
-                                setSelectedSurvey(
-                                    null
-                                )
-                            }
-                        />
-
-                    </div>
-
-                </div>
+            {responsesSurvey && (
+                <SurveyResponses
+                    survey={responsesSurvey}
+                    onClose={() => setResponsesSurvey(null)}
+                />
             )}
 
         </DashboardLayout>

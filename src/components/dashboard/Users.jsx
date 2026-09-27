@@ -1,115 +1,39 @@
-import { useEffect, useState } from "react";
-import { getUsers } from "../../services/api/projectApi";
 import "./Users.css";
 
-function Users() {
-
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    useEffect(() => {
-
-        async function loadUsers() {
-
-            try {
-
-                setError("");
-
-                const data = await getUsers();
-
-                setUsers(
-                    Array.isArray(data)
-                        ? data
-                        : []
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Failed to load users:",
-                    error
-                );
-
-                setError(
-                    "Unable to load team members."
-                );
-
-            } finally {
-
-                setLoading(false);
-
-            }
-
-        }
-
-        loadUsers();
-
-    }, []);
-
-    return (
-
-        <div className="users">
-
-            <h2>
-                Team Members
-            </h2>
-
-            {loading && (
-
-                <p className="users-message">
-                    Loading team members...
-                </p>
-
-            )}
-
-            {error && (
-
-                <p className="users-error">
-                    {error}
-                </p>
-
-            )}
-
-            {!loading &&
-             !error &&
-             users.length === 0 && (
-
-                <p className="users-message">
-                    No team members available.
-                </p>
-
-            )}
-
-            {!loading &&
-             !error &&
-             users.length > 0 && (
-
-                users.map(user => (
-
-                    <div
-                        key={user.id}
-                        className="user-card"
-                    >
-
-                        <div className="user-name">
-                            {user.name}
-                        </div>
-
-                        <div className="user-email">
-                            {user.email || "No email available"}
-                        </div>
-
-                    </div>
-
-                ))
-
-            )}
-
-        </div>
-
-    );
-
+function Users({
+  managers = [],
+  loading = false,
+}) {
+  return (
+    <div className="users-panel">
+      <div className="manager-panel-heading">
+        <h2>Project Managers</h2>
+        <span>{loading ? "…" : managers.length}</span>
+      </div>
+      {loading ? (
+        <p className="manager-panel-empty">Loading manager directory...</p>
+      ) : managers.length === 0 ? (
+        <p className="manager-panel-empty">No project managers are available.</p>
+      ) : (
+        <ul className="manager-summary-list">
+          {managers.slice(0, 5).map((manager) => (
+            <li key={manager.id}>
+              <span className="manager-summary-avatar">
+                {(manager.name || "P").charAt(0).toUpperCase()}
+              </span>
+              <span className="manager-summary-name">
+                <strong>{manager.name}</strong>
+                <small>{manager.company || manager.job_title || "Project Manager"}</small>
+              </span>
+              <span className={`manager-summary-state ${manager.is_active ? "active" : "inactive"}`}>
+                {manager.is_active ? "Active" : "Setup"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export default Users;

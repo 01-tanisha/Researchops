@@ -3,29 +3,25 @@ import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav className="navbar">
-
-      <div className="navbar-logo">
-        ResearchOps AI
-      </div>
+    <nav className="navbar" aria-label="Main navigation">
+      <Link className="navbar-logo" to="/#top">
+        <span className="brand-mark" aria-hidden="true">R</span>
+        ResearchOps
+      </Link>
 
       <div className="nav-center">
         <ul className="nav-links">
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/features">Features</Link></li>
-          <li><Link to="/pricing">Pricing</Link></li>
-          <li><Link to="/about">About</Link></li>
-          <li><Link to="/contact">Contact</Link></li>
+          <li><a href="#top">Overview</a></li>
+          <li><a href="#features">Platform</a></li>
+          <li><a href="#workflow">Workflow</a></li>
+          <li><a href="#contact">Contact</a></li>
         </ul>
       </div>
 
       <div className="nav-buttons">
-        <Link to="/login">
-
-        <button className="login-btn">Login</button></Link>
-        <button className="start-btn">Get Started</button>
+        <Link className="login-btn" to="/login">Sign in</Link>
+        <Link className="start-btn" to="/register">Create account</Link>
       </div>
-
     </nav>
   );
 }

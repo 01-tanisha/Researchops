@@ -94,6 +94,73 @@ export async function getUsers() {
     return await response.json();
 }
 
+export async function deleteUser(id) {
+    const csrfToken = document.cookie
+        .split("; ")
+        .find((cookie) => cookie.startsWith("csrftoken="))
+        ?.split("=")[1];
+
+    const response = await fetch(`${USERS_URL}${id}/`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: csrfToken
+            ? { "X-CSRFToken": decodeURIComponent(csrfToken) }
+            : {},
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to delete project manager.");
+    }
+
+    return data;
+}
+
+export async function getManagerApplications() {
+    const response = await fetch("/api/manager-applications/", {
+        credentials: "include",
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to load verification requests.");
+    }
+    return data;
+}
+
+export async function reviewManagerApplication(id, action) {
+    const csrfToken = document.cookie
+        .split("; ")
+        .find((cookie) => cookie.startsWith("csrftoken="))
+        ?.split("=")[1];
+    const response = await fetch(`/api/manager-applications/${id}/`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+            ...(csrfToken ? { "X-CSRFToken": decodeURIComponent(csrfToken) } : {}),
+        },
+        body: JSON.stringify({ action }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Unable to review verification request.");
+    }
+    return data;
+}
+
+export async function activateProjectManagerAccount(payload) {
+    const response = await fetch("/api/register/activate/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Unable to activate your account.");
+    }
+    return data;
+}
+
 
 // ==================== VENDORS ====================
 
@@ -362,4 +429,15 @@ export async function getProjectsForClient(clientId) {
 
         return String(projectClientId) === String(clientId);
     });
+}
+
+export async function getDashboardProjectManagers() {
+    const response = await fetch("/api/dashboard/project-managers/", {
+        credentials: "include",
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch project managers.");
+    }
+    return data;
 }

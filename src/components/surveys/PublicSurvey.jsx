@@ -6,6 +6,8 @@ import {
     submitScreeningAnswers,
     getSurveyQuestions,
     submitSurveyResponse,
+    startPublicSurvey,
+    completePublicSurvey,
 } from "../../services/api/surveyApi";
 
 import "./PublicSurvey.css";
@@ -21,6 +23,8 @@ function PublicSurvey() {
 
     const [answers, setAnswers] = useState({});
     const [mainAnswers, setMainAnswers] = useState({});
+
+    const [submissionId, setSubmissionId] = useState(null);
 
     const [step, setStep] = useState("details");
 
@@ -70,6 +74,8 @@ function PublicSurvey() {
     const handleDetailsSubmit = (e) => {
         e.preventDefault();
 
+        setError("");
+
         if (!name.trim()) {
             setError("Please enter your name.");
             return;
@@ -87,8 +93,6 @@ function PublicSurvey() {
             setError("Please enter a valid Gmail address.");
             return;
         }
-
-        setError("");
 
         setStep("screening");
     };
@@ -116,19 +120,26 @@ function PublicSurvey() {
 
         setError("");
 
-        // Required validation
-        for (
-            const question
-            of survey.screening_questions
-        ) {
+        // Validate required screening questions
+        for (const question of survey.screening_questions) {
+            const answer = answers[question.id];
+
             if (
                 question.required &&
-                !answers[question.id]
+                (
+                    answer === undefined ||
+                    answer === null ||
+                    answer === "" ||
+                    (
+                        Array.isArray(answer) &&
+                        answer.length === 0
+                    )
+                )
             ) {
                 setError(
-                    `Please answer question ${survey.screening_questions.indexOf(question) + 1}.`
+                    `Please answer question ${survey.screening_questions.indexOf(question) + 1
+                    }.`
                 );
-
                 return;
             }
         }
@@ -136,30 +147,57 @@ function PublicSurvey() {
         try {
             setIsSubmitting(true);
 
-            const result =
-                await submitScreeningAnswers(
-                    publicToken,
-                    answers,
-                    name,
-                    email
-                );
+            // --------------------------------
+            // SUBMIT SCREENING
+            // --------------------------------
 
-            // WRONG ANSWER
+            const result = await submitScreeningAnswers(
+                publicToken,
+                answers,
+                name.trim(),
+                email.trim()
+            );
+
+            // --------------------------------
+            // WRONG SCREENING ANSWER
+            // --------------------------------
+
             if (!result.eligible) {
                 setStep("disqualified");
                 return;
             }
 
-            // CORRECT ANSWERS
-            // Fetch main survey questions
+            // --------------------------------
+            // SCREENING PASSED
+            // CREATE SURVEY SUBMISSION
+            // --------------------------------
+
+            const submission = await startPublicSurvey(
+                publicToken,
+                name.trim(),
+                email.trim()
+            );
+
+            setSubmissionId(
+                submission.submission_id
+            );
+
+            // --------------------------------
+            // LOAD MAIN SURVEY QUESTIONS
+            // --------------------------------
+
             const questions =
                 await getSurveyQuestions(survey.id);
 
             setMainQuestions(questions);
 
             setStep("mainSurvey");
-
         } catch (err) {
+            console.error(
+                "Screening submission error:",
+                err
+            );
+
             setError(
                 err.message ||
                 "Unable to submit screening answers."
@@ -183,64 +221,105 @@ function PublicSurvey() {
         }));
     };
 
-    const handleMainSurveySubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+    // --------------------------------
+    // SUBMIT MAIN SURVEY
+    // --------------------------------
 
-    // Validate required questions
-    for (const question of mainQuestions) {
-        if (
-            question.required &&
-            !mainAnswers[question.id]
-        ) {
+    const handleMainSurveySubmit = async (e) => {
+        e.preventDefault();
+
+        setError("");
+
+        // Make sure submission was started
+        if (!submissionId) {
             setError(
-                `Please answer question ${
-                    mainQuestions.indexOf(question) + 1
-                }.`
+                "Survey session could not be started. Please refresh and try again."
             );
             return;
         }
-    }
 
-    try {
-        setIsSubmitting(true);
+        // Validate required questions
+        for (const question of mainQuestions) {
+            const answer = mainAnswers[question.id];
 
-        // Convert answers into backend format
-        const formattedAnswers = mainQuestions.map(
-            (question) => ({
-                question: question.id,
-                answer: mainAnswers[question.id] || "",
-            })
-        );
-
-        // Save responses in Django
-        await submitSurveyResponse(
-            survey.id,
-            {
-                respondent_name: name.trim(),
-                respondent_id: email.trim(),
-                answers: formattedAnswers,
+            if (
+                question.required &&
+                (
+                    answer === undefined ||
+                    answer === null ||
+                    answer === "" ||
+                    (
+                        Array.isArray(answer) &&
+                        answer.length === 0
+                    )
+                )
+            ) {
+                setError(
+                    `Please answer question ${mainQuestions.indexOf(question) + 1
+                    }.`
+                );
+                return;
             }
-        );
+        }
 
-        // Show success page
-        setStep("submitted");
+        try {
+            setIsSubmitting(true);
 
-    } catch (err) {
-        console.error(
-            "Survey submission error:",
-            err
-        );
+            // --------------------------------
+            // FORMAT ANSWERS
+            // --------------------------------
 
-        setError(
-            err.message ||
-            "Unable to submit survey. Please try again."
-        );
+            const formattedAnswers =
+                mainQuestions.map((question) => ({
+                    question: question.id,
+                    answer:
+                        mainAnswers[question.id] ?? "",
+                }));
 
-    } finally {
-        setIsSubmitting(false);
-    }
-};
+            // --------------------------------
+            // SAVE MAIN SURVEY RESPONSES
+            // --------------------------------
+
+            await submitSurveyResponse(
+                survey.id,
+                {
+                    respondent_name: name.trim(),
+                    respondent_id: email.trim(),
+                    answers: formattedAnswers,
+
+                    // Keep the same submission ID
+                    // for all main survey answers.
+                    submission_id: submissionId,
+                }
+            );
+
+            // --------------------------------
+            // MARK SURVEY AS COMPLETED
+            // --------------------------------
+
+            await completePublicSurvey(
+                submissionId
+            );
+
+            // --------------------------------
+            // SUCCESS
+            // --------------------------------
+
+            setStep("submitted");
+        } catch (err) {
+            console.error(
+                "Survey submission error:",
+                err
+            );
+
+            setError(
+                err.message ||
+                "Unable to submit survey. Please try again."
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     // --------------------------------
     // LOADING
@@ -270,7 +349,6 @@ function PublicSurvey() {
         return (
             <div className="public-survey-page">
                 <div className="public-survey-card status-card">
-
                     <div className="status-icon">
                         ⏸
                     </div>
@@ -286,7 +364,6 @@ function PublicSurvey() {
                     <p className="status-subtext">
                         Please check back later.
                     </p>
-
                 </div>
             </div>
         );
@@ -300,7 +377,6 @@ function PublicSurvey() {
         return (
             <div className="public-survey-page">
                 <div className="public-survey-card status-card">
-
                     <div className="status-icon error-icon">
                         !
                     </div>
@@ -312,7 +388,6 @@ function PublicSurvey() {
                     <p>
                         {error}
                     </p>
-
                 </div>
             </div>
         );
@@ -320,7 +395,6 @@ function PublicSurvey() {
 
     return (
         <div className="public-survey-page">
-
             <div className="public-survey-card">
 
                 {/* =================================
@@ -342,7 +416,6 @@ function PublicSurvey() {
                             onSubmit={handleDetailsSubmit}
                             className="public-survey-form"
                         >
-
                             <div className="public-form-group">
                                 <label>
                                     Full Name
@@ -385,7 +458,6 @@ function PublicSurvey() {
                             >
                                 Continue
                             </button>
-
                         </form>
                     </>
                 )}
@@ -411,23 +483,17 @@ function PublicSurvey() {
                             onSubmit={handleScreeningSubmit}
                             className="screening-form"
                         >
-
                             {survey.screening_questions.length === 0 ? (
-
                                 <div className="empty-screening">
                                     No screening questions available.
                                 </div>
-
                             ) : (
-
                                 survey.screening_questions.map(
                                     (question, index) => (
-
                                         <div
                                             className="screening-question-card"
                                             key={question.id}
                                         >
-
                                             <div className="question-label">
                                                 <span className="question-number">
                                                     {index + 1}
@@ -446,135 +512,129 @@ function PublicSurvey() {
 
                                             {/* TEXT */}
 
-                                            {(!question.options?.length ||
-                                                question.question_type === "text") && (
-
-                                                <input
-                                                    type="text"
-                                                    className="screening-input"
-                                                    value={
-                                                        answers[
+                                            {(
+                                                !question.options?.length ||
+                                                question.question_type === "text"
+                                            ) && (
+                                                    <input
+                                                        type="text"
+                                                        className="screening-input"
+                                                        value={
+                                                            answers[
                                                             question.id
-                                                        ] || ""
-                                                    }
-                                                    onChange={(e) =>
-                                                        handleScreeningAnswer(
-                                                            question.id,
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder="Enter your answer"
-                                                />
-                                            )}
+                                                            ] || ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleScreeningAnswer(
+                                                                question.id,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        placeholder="Enter your answer"
+                                                    />
+                                                )}
 
                                             {/* SINGLE CHOICE */}
 
-                                            {(question.question_type === "single_choice" ||
-                                                (!question.question_type && question.options?.length > 0)) && (
-
-                                                <div className="screening-options">
-
-                                                    {question.options.map(
-                                                        (
-                                                            option,
-                                                            optionIndex
-                                                        ) => (
-
-                                                            <label
-                                                                className="screening-option"
-                                                                key={
-                                                                    optionIndex
-                                                                }
-                                                            >
-
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`screening-${question.id}`}
-                                                                    value={option}
-                                                                    checked={
-                                                                        answers[
+                                            {(
+                                                question.question_type ===
+                                                "single_choice" ||
+                                                (
+                                                    !question.question_type &&
+                                                    question.options?.length > 0
+                                                )
+                                            ) && (
+                                                    <div className="screening-options">
+                                                        {question.options.map(
+                                                            (
+                                                                option,
+                                                                optionIndex
+                                                            ) => (
+                                                                <label
+                                                                    className="screening-option"
+                                                                    key={
+                                                                        optionIndex
+                                                                    }
+                                                                >
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`screening-${question.id}`}
+                                                                        value={option}
+                                                                        checked={
+                                                                            answers[
                                                                             question.id
-                                                                        ] === option
-                                                                    }
-                                                                    onChange={(e) =>
-                                                                        handleScreeningAnswer(
-                                                                            question.id,
-                                                                            e.target.value
-                                                                        )
-                                                                    }
-                                                                />
+                                                                            ] ===
+                                                                            option
+                                                                        }
+                                                                        onChange={(e) =>
+                                                                            handleScreeningAnswer(
+                                                                                question.id,
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                    />
 
-                                                                <span>
-                                                                    {option}
-                                                                </span>
-
-                                                            </label>
-                                                        )
-                                                    )}
-
-                                                </div>
-                                            )}
+                                                                    <span>
+                                                                        {option}
+                                                                    </span>
+                                                                </label>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                )}
 
                                             {/* YES / NO */}
 
                                             {question.question_type ===
                                                 "yes_no" && (
-
-                                                <div className="screening-options">
-
-                                                    <label className="screening-option">
-
-                                                        <input
-                                                            type="radio"
-                                                            name={`screening-${question.id}`}
-                                                            value="Yes"
-                                                            checked={
-                                                                answers[
+                                                    <div className="screening-options">
+                                                        <label className="screening-option">
+                                                            <input
+                                                                type="radio"
+                                                                name={`screening-${question.id}`}
+                                                                value="Yes"
+                                                                checked={
+                                                                    answers[
                                                                     question.id
-                                                                ] === "Yes"
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleScreeningAnswer(
-                                                                    question.id,
-                                                                    e.target.value
-                                                                )
-                                                            }
-                                                        />
+                                                                    ] === "Yes"
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleScreeningAnswer(
+                                                                        question.id,
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                            />
 
-                                                        <span>
-                                                            Yes
-                                                        </span>
+                                                            <span>
+                                                                Yes
+                                                            </span>
+                                                        </label>
 
-                                                    </label>
-
-                                                    <label className="screening-option">
-
-                                                        <input
-                                                            type="radio"
-                                                            name={`screening-${question.id}`}
-                                                            value="No"
-                                                            checked={
-                                                                answers[
+                                                        <label className="screening-option">
+                                                            <input
+                                                                type="radio"
+                                                                name={`screening-${question.id}`}
+                                                                value="No"
+                                                                checked={
+                                                                    answers[
                                                                     question.id
-                                                                ] === "No"
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleScreeningAnswer(
-                                                                    question.id,
-                                                                    e.target.value
-                                                                )
-                                                            }
-                                                        />
+                                                                    ] === "No"
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleScreeningAnswer(
+                                                                        question.id,
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                            />
 
-                                                        <span>
-                                                            No
-                                                        </span>
-
-                                                    </label>
-
-                                                </div>
-                                            )}
-
+                                                            <span>
+                                                                No
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                )}
                                         </div>
                                     )
                                 )
@@ -595,7 +655,6 @@ function PublicSurvey() {
                                     ? "Checking Eligibility..."
                                     : "Submit Screening"}
                             </button>
-
                         </form>
                     </>
                 )}
@@ -606,7 +665,6 @@ function PublicSurvey() {
 
                 {step === "disqualified" && (
                     <div className="result-page">
-
                         <div className="result-icon disqualified-icon">
                             ✕
                         </div>
@@ -625,7 +683,6 @@ function PublicSurvey() {
                             do not meet the screening
                             requirements for this survey.
                         </p>
-
                     </div>
                 )}
 
@@ -651,30 +708,23 @@ function PublicSurvey() {
                         </div>
 
                         <div className="main-survey-section">
-
                             <h2>
                                 Survey Questions
                             </h2>
 
                             {mainQuestions.length === 0 ? (
-
                                 <div className="empty-screening">
                                     No survey questions have
                                     been added yet.
                                 </div>
-
                             ) : (
-
                                 mainQuestions.map(
                                     (question, index) => (
-
                                         <div
                                             className="main-question-card"
                                             key={question.id}
                                         >
-
                                             <div className="question-label">
-
                                                 <span className="question-number">
                                                     {index + 1}
                                                 </span>
@@ -688,194 +738,222 @@ function PublicSurvey() {
                                                         </b>
                                                     )}
                                                 </span>
-
                                             </div>
 
                                             {/* TEXT */}
 
                                             {question.question_type ===
                                                 "text" && (
-
-                                                <input
-                                                    type="text"
-                                                    className="screening-input"
-                                                    value={
-                                                        mainAnswers[
+                                                    <input
+                                                        type="text"
+                                                        className="screening-input"
+                                                        value={
+                                                            mainAnswers[
                                                             question.id
-                                                        ] || ""
-                                                    }
-                                                    onChange={(e) =>
-                                                        handleMainAnswer(
-                                                            question.id,
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder="Enter your answer"
-                                                />
-                                            )}
+                                                            ] || ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleMainAnswer(
+                                                                question.id,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        placeholder="Enter your answer"
+                                                    />
+                                                )}
 
                                             {/* SINGLE CHOICE */}
 
                                             {question.question_type ===
                                                 "single_choice" && (
-
-                                                <div className="screening-options">
-
-                                                    {question.options?.map(
-                                                        (
-                                                            option,
-                                                            optionIndex
-                                                        ) => (
-
-                                                            <label
-                                                                className="screening-option"
-                                                                key={
-                                                                    optionIndex
-                                                                }
-                                                            >
-
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`main-${question.id}`}
-                                                                    value={option}
-                                                                    checked={
-                                                                        mainAnswers[
+                                                    <div className="screening-options">
+                                                        {question.options?.map(
+                                                            (
+                                                                option,
+                                                                optionIndex
+                                                            ) => (
+                                                                <label
+                                                                    className="screening-option"
+                                                                    key={
+                                                                        optionIndex
+                                                                    }
+                                                                >
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`main-${question.id}`}
+                                                                        value={option}
+                                                                        checked={
+                                                                            mainAnswers[
                                                                             question.id
-                                                                        ] === option
-                                                                    }
-                                                                    onChange={(e) =>
-                                                                        handleMainAnswer(
-                                                                            question.id,
-                                                                            e.target.value
-                                                                        )
-                                                                    }
-                                                                />
+                                                                            ] ===
+                                                                            option
+                                                                        }
+                                                                        onChange={(e) =>
+                                                                            handleMainAnswer(
+                                                                                question.id,
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                    />
 
-                                                                <span>
-                                                                    {option}
-                                                                </span>
+                                                                    <span>
+                                                                        {option}
+                                                                    </span>
+                                                                </label>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                )}
 
-                                                            </label>
-                                                        )
-                                                    )}
+                                            {/* MULTIPLE CHOICE */}
 
-                                                </div>
-                                            )}
+                                            {question.question_type ===
+                                                "multiple_choice" && (
+                                                    <div className="screening-options">
+                                                        {question.options?.map(
+                                                            (
+                                                                option,
+                                                                optionIndex
+                                                            ) => {
+                                                                const selected =
+                                                                    Array.isArray(
+                                                                        mainAnswers[
+                                                                        question.id
+                                                                        ]
+                                                                    )
+                                                                        ? mainAnswers[
+                                                                        question.id
+                                                                        ]
+                                                                        : [];
 
-                                            {question.question_type === "multiple_choice" && (
-                                                <div className="screening-options">
-                                                    {question.options?.map((option, optionIndex) => {
-                                                        const selected = Array.isArray(mainAnswers[question.id])
-                                                            ? mainAnswers[question.id]
-                                                            : [];
+                                                                return (
+                                                                    <label
+                                                                        className="screening-option"
+                                                                        key={
+                                                                            optionIndex
+                                                                        }
+                                                                    >
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            value={
+                                                                                option
+                                                                            }
+                                                                            checked={selected.includes(
+                                                                                option
+                                                                            )}
+                                                                            onChange={(
+                                                                                e
+                                                                            ) => {
+                                                                                const next =
+                                                                                    e
+                                                                                        .target
+                                                                                        .checked
+                                                                                        ? [
+                                                                                            ...selected,
+                                                                                            option,
+                                                                                        ]
+                                                                                        : selected.filter(
+                                                                                            (
+                                                                                                value
+                                                                                            ) =>
+                                                                                                value !==
+                                                                                                option
+                                                                                        );
 
-                                                        return (
-                                                            <label className="screening-option" key={optionIndex}>
-                                                                <input
-                                                                    type="checkbox"
-                                                                    value={option}
-                                                                    checked={selected.includes(option)}
-                                                                    onChange={(e) => {
-                                                                        const next = e.target.checked
-                                                                            ? [...selected, option]
-                                                                            : selected.filter((value) => value !== option);
-                                                                        handleMainAnswer(question.id, next);
-                                                                    }}
-                                                                />
-                                                                <span>{option}</span>
-                                                            </label>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
+                                                                                handleMainAnswer(
+                                                                                    question.id,
+                                                                                    next
+                                                                                );
+                                                                            }}
+                                                                        />
+
+                                                                        <span>
+                                                                            {option}
+                                                                        </span>
+                                                                    </label>
+                                                                );
+                                                            }
+                                                        )}
+                                                    </div>
+                                                )}
 
                                             {/* YES / NO */}
 
                                             {question.question_type ===
                                                 "yes_no" && (
-
-                                                <div className="screening-options">
-
-                                                    {["Yes", "No"].map(
-                                                        (option) => (
-
-                                                            <label
-                                                                className="screening-option"
-                                                                key={option}
-                                                            >
-
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`main-${question.id}`}
-                                                                    value={option}
-                                                                    checked={
-                                                                        mainAnswers[
+                                                    <div className="screening-options">
+                                                        {["Yes", "No"].map(
+                                                            (option) => (
+                                                                <label
+                                                                    className="screening-option"
+                                                                    key={option}
+                                                                >
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`main-${question.id}`}
+                                                                        value={option}
+                                                                        checked={
+                                                                            mainAnswers[
                                                                             question.id
-                                                                        ] === option
-                                                                    }
-                                                                    onChange={(e) =>
-                                                                        handleMainAnswer(
-                                                                            question.id,
-                                                                            e.target.value
-                                                                        )
-                                                                    }
-                                                                />
+                                                                            ] ===
+                                                                            option
+                                                                        }
+                                                                        onChange={(e) =>
+                                                                            handleMainAnswer(
+                                                                                question.id,
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                    />
 
-                                                                <span>
-                                                                    {option}
-                                                                </span>
-
-                                                            </label>
-                                                        )
-                                                    )}
-
-                                                </div>
-                                            )}
+                                                                    <span>
+                                                                        {option}
+                                                                    </span>
+                                                                </label>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                )}
 
                                             {/* RATING */}
 
                                             {question.question_type ===
                                                 "rating" && (
-
-                                                <div className="rating-options">
-
-                                                    {[1, 2, 3, 4, 5].map(
-                                                        (rating) => (
-
-                                                            <label
-                                                                key={rating}
-                                                                className="rating-option"
-                                                            >
-
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`rating-${question.id}`}
-                                                                    value={rating}
-                                                                    checked={
-                                                                        mainAnswers[
+                                                    <div className="rating-options">
+                                                        {[1, 2, 3, 4, 5].map(
+                                                            (rating) => (
+                                                                <label
+                                                                    key={rating}
+                                                                    className="rating-option"
+                                                                >
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`rating-${question.id}`}
+                                                                        value={rating}
+                                                                        checked={
+                                                                            mainAnswers[
                                                                             question.id
-                                                                        ] ===
-                                                                        String(rating)
-                                                                    }
-                                                                    onChange={(e) =>
-                                                                        handleMainAnswer(
-                                                                            question.id,
-                                                                            e.target.value
-                                                                        )
-                                                                    }
-                                                                />
+                                                                            ] ===
+                                                                            String(
+                                                                                rating
+                                                                            )
+                                                                        }
+                                                                        onChange={(e) =>
+                                                                            handleMainAnswer(
+                                                                                question.id,
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                    />
 
-                                                                <span>
-                                                                    {rating}
-                                                                </span>
-
-                                                            </label>
-                                                        )
-                                                    )}
-
-                                                </div>
-                                            )}
-
+                                                                    <span>
+                                                                        {rating}
+                                                                    </span>
+                                                                </label>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                )}
                                         </div>
                                     )
                                 )
@@ -886,7 +964,12 @@ function PublicSurvey() {
                                     className="main-survey-submit-form"
                                     onSubmit={handleMainSurveySubmit}
                                 >
-                                    {error && <div className="form-error">{error}</div>}
+                                    {error && (
+                                        <div className="form-error">
+                                            {error}
+                                        </div>
+                                    )}
+
                                     <button
                                         type="submit"
                                         className="public-survey-button"
@@ -898,21 +981,30 @@ function PublicSurvey() {
                                     </button>
                                 </form>
                             )}
-
                         </div>
                     </>
                 )}
 
+                {/* =================================
+                    SUBMITTED
+                ================================= */}
+
                 {step === "submitted" && (
                     <div className="result-page success-page">
-                        <div className="result-icon success-icon">✓</div>
-                        <h1>Response Submitted</h1>
+                        <div className="result-icon success-icon">
+                            ✓
+                        </div>
+
+                        <h1>
+                            Response Submitted
+                        </h1>
+
                         <p>
-                            Thank you, {name}. Your survey response has been recorded.
+                            Thank you, {name}. Your survey response
+                            has been recorded.
                         </p>
                     </div>
                 )}
-
             </div>
         </div>
     );

@@ -1,56 +1,31 @@
 import "./Features.css";
-import FeatureCard from "../common/FeatureCard";
 
 function Features() {
 
     const features = [
-
-        {
-            title:"Vendor Management",
-            description:"Manage vendors from one dashboard."
-        },
-
-        {
-            title:"Survey Tracking",
-            description:"Track survey progress in real-time."
-        },
-
-        {
-            title:"Reports",
-            description:"Generate automatic client reports."
-        },
-
-        {
-            title:"AI Dashboard",
-            description:"Monitor KPIs using AI insights."
-        }
-
+        { index: "01", title: "Project intake", description: "Keep the client, project brief, status, and delivery context together." },
+        { index: "02", title: "Survey operations", description: "Connect surveys to projects and keep requirements visible to the team." },
+        { index: "03", title: "Vendor fieldwork", description: "Set vendor allocations and follow assigned and delivered completes." },
+        { index: "04", title: "Clear reporting", description: "Review survey performance, completes, and billing from one workspace." },
     ];
 
     return(
 
         <section className="features" id="features">
-
-            <h2>Everything you need</h2>
-
-            <div className="feature-grid">
-
-                {features.map((feature,index)=>(
-
-                    <FeatureCard
-
-                        key={index}
-
-                        title={feature.title}
-
-                        description={feature.description}
-
-                    />
-
-                ))}
-
+            <div className="features-heading">
+                <p>ONE CONNECTED WORKSPACE</p>
+                <h2>Less chasing. <em>More clarity.</em></h2>
             </div>
 
+            <div className="feature-grid">
+                {features.map((feature) => (
+                    <article className="feature-card" key={feature.index}>
+                        <span>{feature.index}</span>
+                        <h3>{feature.title}</h3>
+                        <p>{feature.description}</p>
+                    </article>
+                ))}
+            </div>
         </section>
 
     );

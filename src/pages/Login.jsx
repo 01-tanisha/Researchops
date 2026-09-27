@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Login.css";
 
-function Login() {
+function Login({ adminMode = false }) {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -40,7 +41,15 @@ function Login() {
                 );
             }
 
-            navigate("/dashboard");
+            if (adminMode && !data.user?.is_superuser) {
+                await fetch("/api/logout/", {
+                    method: "POST",
+                    credentials: "include",
+                });
+                throw new Error("This portal is for administrators. Sign in through the project manager portal.");
+            }
+
+            navigate(data.user?.is_superuser ? "/admin" : "/dashboard");
         } catch (error) {
             console.error("Login failed:", error);
             setError(error.message);
@@ -52,9 +61,14 @@ function Login() {
     return (
         <div className="login-page">
             <div className="login-card">
-                <h1>ResearchOps</h1>
+                <h1>{adminMode ? "ResearchOps Admin" : "ResearchOps"}</h1>
+                {location.state?.message && (
+                    <p className="login-success" role="status">
+                        {location.state.message}
+                    </p>
+                )}
                 <p className="login-subtitle">
-                    Sign in to your account
+                    {adminMode ? "Administrator portal sign in" : "Sign in to your project workspace"}
                 </p>
 
                 <form onSubmit={handleLogin}>
@@ -97,6 +111,17 @@ function Login() {
                         {loading ? "Signing in..." : "Login"}
                     </button>
                 </form>
+                {adminMode ? (
+                    <p className="login-register-link">Project manager? <Link to="/login">Use the PM sign-in</Link></p>
+                ) : (
+                    <>
+                        <p className="login-register-link">
+                            New project manager? <Link to="/register">Request account verification</Link>
+                        </p>
+                        <p className="login-register-link">Administrator? <Link to="/admin/login">Admin portal sign in</Link></p>
+                    </>
+                )}
+                <Link className="login-home-link" to="/">Back to home</Link>
             </div>
         </div>
     );

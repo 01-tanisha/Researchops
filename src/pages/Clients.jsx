@@ -7,10 +7,12 @@ import {
 } from "../services/api/projectApi";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
+import Modal from "../components/common/Modal";
 import "./Clients.css";
 
 function Clients() {
     const [clients, setClients] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const [name, setName] = useState("");
     const [company, setCompany] = useState("");
@@ -20,10 +22,17 @@ function Clients() {
     const [status, setStatus] = useState("Active");
 
     const [editingId, setEditingId] = useState(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
+
+    const searchQuery = searchTerm.trim().toLowerCase();
+    const filteredClients = clients.filter((client) =>
+        [client.name, client.company, client.email, client.phone]
+            .some((value) => String(value || "").toLowerCase().includes(searchQuery))
+    );
 
     useEffect(() => {
         let cancelled = false;
@@ -75,6 +84,7 @@ function Clients() {
         setStatus("Active");
         setEditingId(null);
         setError("");
+        setIsFormOpen(false);
     }
 
     async function handleSubmit(event) {
@@ -152,11 +162,7 @@ function Clients() {
         setNotes(client.notes || "");
         setStatus(client.status || "Active");
         setError("");
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
+        setIsFormOpen(true);
     }
 
     async function handleDelete(client) {
@@ -199,17 +205,28 @@ function Clients() {
         <DashboardLayout>
             <div className="clients-page">
 
-                <h1 className="clients-title">
-                    Clients
-                </h1>
+                <div className="clients-page-header">
+                    <div>
+                        <h1 className="clients-title">Clients</h1>
+                        <p>Manage client contacts and company details.</p>
+                    </div>
+                    <button
+                        type="button"
+                        className="client-add-button"
+                        onClick={() => {
+                            resetForm();
+                            setIsFormOpen(true);
+                        }}
+                    >
+                        + Add Client
+                    </button>
+                </div>
 
-                <div className="client-form-card">
-
-                    <h2>
-                        {editingId
-                            ? "Edit Client"
-                            : "Add Client"}
-                    </h2>
+                <Modal
+                    isOpen={isFormOpen}
+                    onClose={resetForm}
+                    title={editingId ? "Edit Client" : "Add Client"}
+                >
 
                     {error && (
                         <p className="client-error">
@@ -357,7 +374,7 @@ function Clients() {
                         </div>
 
                     </form>
-                </div>
+                </Modal>
 
                 <div className="clients-list-card">
 
@@ -366,9 +383,22 @@ function Clients() {
                             Client List
                         </h2>
 
-                        <span>
-                            {clients.length} Clients
-                        </span>
+                        <div className="directory-list-tools">
+                            <label className="directory-search">
+                                <span className="visually-hidden">Search clients</span>
+                                <input
+                                    type="search"
+                                    placeholder="Search clients..."
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                />
+                            </label>
+                            <span>
+                                {filteredClients.length === clients.length
+                                    ? `${clients.length} Clients`
+                                    : `${filteredClients.length} of ${clients.length} Clients`}
+                            </span>
+                        </div>
                     </div>
 
                     {loading && (
@@ -385,7 +415,14 @@ function Clients() {
                         )}
 
                     {!loading &&
-                        clients.length > 0 && (
+                        !error &&
+                        clients.length > 0 && filteredClients.length === 0 && (
+                            <p className="clients-message">No clients match “{searchTerm}”.</p>
+                        )}
+
+                    {!loading &&
+                        !error &&
+                        filteredClients.length > 0 && (
                             <div className="clients-table-wrapper">
 
                                 <table className="clients-table">
@@ -420,7 +457,7 @@ function Clients() {
 
                                     <tbody>
 
-                                        {clients.map(
+                                        {filteredClients.map(
                                             (client) => (
                                                 <tr
                                                     key={

@@ -9,6 +9,7 @@ import {
     getSurveyQuestions,
     getScreeningQuestions,
     getSurveyBilling,
+    getSurveyAnalytics,
     updateSurveyStatus,
 } from "../../services/api/surveyApi";
 
@@ -39,6 +40,7 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
     // ==================== PUBLIC LINK ====================
 
     const [linkCopied, setLinkCopied] = useState(false);
+    const [copiedAllocationId, setCopiedAllocationId] = useState(null);
 
     // ==================== VENDOR ALLOCATION ====================
 
@@ -55,10 +57,7 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
         vendor_id: "",
         assigned_completes: "",
         delivered_completes: "",
-        valid_completes: "",
         vendor_cpi: "",
-        feasibility: "",
-        status: "Pending",
         notes: "",
     });
 
@@ -76,6 +75,27 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
 
     const [billing, setBilling] = useState(null);
     const [billingError, setBillingError] = useState("");
+    const [surveyMetrics, setSurveyMetrics] = useState(null);
+
+    useEffect(() => {
+        let active = true;
+        if (!survey?.id) {
+            return undefined;
+        }
+
+        getSurveyAnalytics(survey.id)
+            .then((metrics) => {
+                if (active) setSurveyMetrics(metrics);
+            })
+            .catch((error) => {
+                console.error("Failed to load measured survey metrics:", error);
+                if (active) setSurveyMetrics(null);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [survey?.id]);
 
     // Keep status synchronized when a different survey is opened
     useEffect(() => {
@@ -389,6 +409,7 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
         try {
             await navigator.clipboard.writeText(publicLink);
             setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2500);
         } catch (error) {
             console.error(
                 "Failed to copy survey link:",
@@ -399,17 +420,39 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
         }
     };
 
+    const handleCopyVendorLink = async (allocation) => {
+        if (!survey?.public_token || !allocation?.public_token) {
+            alert("Survey or vendor tracking token is not available.");
+            return;
+        }
+
+        const vendorUrl = `${window.location.origin}/survey/${survey.public_token}?vendor=${allocation.public_token}`;
+
+        try {
+            await navigator.clipboard.writeText(vendorUrl);
+            setCopiedAllocationId(allocation.id);
+            setTimeout(() => setCopiedAllocationId(null), 2500);
+        } catch (err) {
+            console.error("Failed to copy vendor link:", err);
+            const textarea = document.createElement("textarea");
+            textarea.value = vendorUrl;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            setCopiedAllocationId(allocation.id);
+            setTimeout(() => setCopiedAllocationId(null), 2500);
+        }
+    };
+
     // ==================== ALLOCATION FORM ====================
 
     const resetAllocationForm = () => {
         setAllocationForm({
             vendor_id: "",
             assigned_completes: "",
-            delivered_completes: "",
-            valid_completes: "",
+            delivered_completes: survey?.delivered_completes ?? 0,
             vendor_cpi: "",
-            feasibility: "",
-            status: "Pending",
             notes: "",
         });
 
@@ -446,19 +489,10 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                 allocation.assigned_completes ?? "",
 
             delivered_completes:
-                allocation.delivered_completes ?? "",
-
-            valid_completes:
-                allocation.valid_completes ?? "",
+                allocation.delivered_completes ?? survey?.delivered_completes ?? 0,
 
             vendor_cpi:
                 allocation.vendor_cpi ?? "",
-
-            feasibility:
-                allocation.feasibility ?? "",
-
-            status:
-                allocation.status ?? "Pending",
 
             notes:
                 allocation.notes ?? "",
@@ -490,16 +524,8 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
             allocationForm.delivered_completes || 0
         );
 
-        const valid = Number(
-            allocationForm.valid_completes || 0
-        );
-
         const vendorCpi = Number(
             allocationForm.vendor_cpi || 0
-        );
-
-        const feasibility = Number(
-            allocationForm.feasibility || 0
         );
 
         // ---------- VALIDATION ----------
@@ -525,37 +551,9 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
             return;
         }
 
-        if (valid < 0) {
-            setAllocationError(
-                "Valid completes cannot be negative."
-            );
-            return;
-        }
-
-        if (delivered > assigned) {
-            setAllocationError(
-                "Delivered completes cannot be greater than assigned completes."
-            );
-            return;
-        }
-
-        if (valid > delivered) {
-            setAllocationError(
-                "Valid completes cannot be greater than delivered completes."
-            );
-            return;
-        }
-
         if (vendorCpi < 0) {
             setAllocationError(
                 "Vendor CPI cannot be negative."
-            );
-            return;
-        }
-
-        if (feasibility < 0) {
-            setAllocationError(
-                "Feasibility cannot be negative."
             );
             return;
         }
@@ -568,10 +566,7 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                 vendor_id: vendorId,
                 assigned_completes: assigned,
                 delivered_completes: delivered,
-                valid_completes: valid,
                 vendor_cpi: vendorCpi,
-                feasibility: feasibility,
-                status: allocationForm.status,
                 notes: allocationForm.notes.trim(),
             };
 
@@ -786,7 +781,7 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                     </div>
 
                     <div className="requirement-card">
-                        <span>Incidence Rate</span>
+                        <span>Target IR</span>
                         <strong>
                             {survey.incidence_rate != null
                                 ? `${survey.incidence_rate}%`
@@ -795,11 +790,29 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                     </div>
 
                     <div className="requirement-card">
-                        <span>LOI</span>
+                        <span>Target LOI</span>
                         <strong>
                             {survey.loi != null
                                 ? `${survey.loi} min`
                                 : "Not specified"}
+                        </strong>
+                    </div>
+
+                    <div className="requirement-card">
+                        <span>Measured IR</span>
+                        <strong>
+                            {surveyMetrics?.incidence_rate != null
+                                ? `${surveyMetrics.incidence_rate}%`
+                                : "—"}
+                        </strong>
+                    </div>
+
+                    <div className="requirement-card">
+                        <span>Measured LOI</span>
+                        <strong>
+                            {surveyMetrics?.loi != null
+                                ? `${surveyMetrics.loi} min`
+                                : "—"}
                         </strong>
                     </div>
 
@@ -1060,10 +1073,6 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                                                         "Unknown Vendor"}
                                                 </strong>
 
-                                                <span>
-                                                    {allocation.status}
-                                                </span>
-
                                             </div>
 
                                             <div className="allocation-stats">
@@ -1080,14 +1089,7 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                                                     <span>Delivered</span>
                                                     <strong>
                                                         {allocation.delivered_completes ??
-                                                            0}
-                                                    </strong>
-                                                </div>
-
-                                                <div>
-                                                    <span>Valid</span>
-                                                    <strong>
-                                                        {allocation.valid_completes ??
+                                                            survey.delivered_completes ??
                                                             0}
                                                     </strong>
                                                 </div>
@@ -1097,6 +1099,24 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                                                     <strong>
                                                         {allocation.remaining_completes ??
                                                             remaining}
+                                                    </strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Measured LOI</span>
+                                                    <strong>
+                                                        {surveyMetrics?.loi != null
+                                                            ? `${surveyMetrics.loi} min`
+                                                            : "—"}
+                                                    </strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Measured IR</span>
+                                                    <strong>
+                                                        {surveyMetrics?.incidence_rate != null
+                                                            ? `${surveyMetrics.incidence_rate}%`
+                                                            : "—"}
                                                     </strong>
                                                 </div>
 
@@ -1116,14 +1136,6 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                                                     </strong>
                                                 </div>
 
-                                                <div>
-                                                    <span>Feasibility</span>
-                                                    <strong>
-                                                        {allocation.feasibility ??
-                                                            0}
-                                                    </strong>
-                                                </div>
-
                                             </div>
 
                                             {allocation.notes && (
@@ -1136,6 +1148,20 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                                             )}
 
                                             <div className="allocation-actions">
+
+                                                <button
+                                                    type="button"
+                                                    className="copy-survey-link-btn"
+                                                    onClick={() =>
+                                                        handleCopyVendorLink(
+                                                            allocation
+                                                        )
+                                                    }
+                                                >
+                                                    {copiedAllocationId === allocation.id
+                                                        ? "Link Copied!"
+                                                        : "Copy Vendor Link"}
+                                                </button>
 
                                                 <button
                                                     type="button"
@@ -1603,31 +1629,38 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                                     <input
                                         type="number"
                                         name="delivered_completes"
-                                        min="0"
                                         value={
                                             allocationForm.delivered_completes
                                         }
-                                        onChange={
-                                            handleAllocationInput
-                                        }
+                                        readOnly
                                     />
                                 </div>
 
                                 <div>
-                                    <label>
-                                        Valid Completes
-                                    </label>
+                                    <label>Measured LOI (min)</label>
 
                                     <input
-                                        type="number"
-                                        name="valid_completes"
-                                        min="0"
+                                        type="text"
                                         value={
-                                            allocationForm.valid_completes
+                                            surveyMetrics?.loi != null
+                                                ? `${surveyMetrics.loi} min`
+                                                : "—"
                                         }
-                                        onChange={
-                                            handleAllocationInput
+                                        readOnly
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Measured IR (%)</label>
+
+                                    <input
+                                        type="text"
+                                        value={
+                                            surveyMetrics?.incidence_rate != null
+                                                ? `${surveyMetrics.incidence_rate}%`
+                                                : "—"
                                         }
+                                        readOnly
                                     />
                                 </div>
 
@@ -1648,61 +1681,6 @@ function SurveyDetails({ survey, onClose, onSurveyUpdated }) {
                                             handleAllocationInput
                                         }
                                     />
-                                </div>
-
-                                <div>
-                                    <label>
-                                        Feasibility
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        name="feasibility"
-                                        min="0"
-                                        value={
-                                            allocationForm.feasibility
-                                        }
-                                        onChange={
-                                            handleAllocationInput
-                                        }
-                                    />
-                                </div>
-
-                                <div>
-                                    <label>Status</label>
-
-                                    <select
-                                        name="status"
-                                        value={
-                                            allocationForm.status
-                                        }
-                                        onChange={
-                                            handleAllocationInput
-                                        }
-                                    >
-
-                                        <option value="Pending">
-                                            Pending
-                                        </option>
-
-                                        <option value="Active">
-                                            Active
-                                        </option>
-
-                                        <option value="Quota Full">
-                                            Quota Full
-                                        </option>
-
-                                        <option value="Completed">
-                                            Completed
-                                        </option>
-
-                                        <option value="Paused">
-                                            Paused
-                                        </option>
-
-                                    </select>
-
                                 </div>
 
                                 <div className="allocation-notes-field">
